@@ -332,7 +332,7 @@ export default function ProfilePage() {
                       <AlertCircle className="h-4 w-4" />
                       <AlertTitle>Warning</AlertTitle>
                       <AlertDescription>
-                        While deactivated, you won't be able to access any
+                        While deactivated, you won&apos;t be able to access any
                         services or your funds.
                       </AlertDescription>
                     </Alert>

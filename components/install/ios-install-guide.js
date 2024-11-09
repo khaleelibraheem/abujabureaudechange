@@ -1,4 +1,3 @@
-// components/ios-install-guide.js
 "use client";
 
 import { useState, useEffect } from "react";
@@ -44,11 +43,11 @@ export function IOSInstallGuide() {
           </li>
           <li className="flex items-start space-x-2">
             <span className="font-bold">2.</span>
-            <span>Scroll down and tap "Add to Home Screen"</span>
+          <span>Scroll down and tap &quot;Add to Home Screen&quot;</span>
           </li>
           <li className="flex items-start space-x-2">
             <span className="font-bold">3.</span>
-            <span>Tap "Add" to install</span>
+            <span>Tap &quot;Add&quot; to install</span>
           </li>
         </ol>
       </CardContent>
