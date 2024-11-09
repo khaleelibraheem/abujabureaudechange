@@ -12,6 +12,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { NavigationMenu } from "./navigation-menu";
+import Logo from "../shared/logo";
 
 export function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,8 +45,8 @@ export function MobileNavigation() {
           className="w-72 p-0 bg-white dark:bg-[#0B0F1C] border-r border-gray-200 dark:border-gray-800"
         >
           <SheetHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
-            <SheetTitle className="bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent text-md font-bold text-left">
-              AbujaBureauDeChange
+            <SheetTitle>
+              <Logo />
             </SheetTitle>
             <SheetDescription className="text-left text-sm text-gray-500 dark:text-gray-400">
               Your trusted exchange partner

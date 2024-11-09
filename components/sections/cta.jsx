@@ -21,7 +21,6 @@ export default function CTASection() {
       {/* Background with gradient */}
       <div className="absolute inset-0 bg-indigo-600 dark:bg-indigo-500">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700 opacity-90" />
-        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10" />
       </div>
 
       {/* Floating shapes */}
@@ -85,7 +84,6 @@ export default function CTASection() {
               >
                 <Link href="/contact">Contact Sales</Link>
               </Button>
-              
             </div>
           </motion.div>
 

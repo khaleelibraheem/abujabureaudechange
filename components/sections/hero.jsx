@@ -107,7 +107,7 @@ export default function HeroSection() {
             transition={{ delay: 0.2, duration: 0.5 }}
           >
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500 to-sky-500 rounded-3xl blur-2xl opacity-20" />
+              <div className="hidden xl:block absolute inset-0 bg-gradient-to-tr from-indigo-500 to-sky-500 rounded-3xl blur-2xl opacity-20" />
               <div className="relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-8">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between mb-6">

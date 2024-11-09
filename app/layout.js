@@ -1,4 +1,4 @@
-import { Inter } from "next/font/google";
+import { Inter} from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/layout/navbar";
@@ -7,52 +7,47 @@ import "./globals.css";
 import Providers from "./providers";
 import { BankingProvider } from "@/contexts/BankingContext";
 import { Toaster } from "sonner";
-import { PWAProvider } from "@/contexts/PWAContext";
-import { InstallButton } from "@/components/install/install-button";
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover",
 };
 
+
 export const metadata = {
-  title: "AbujaBureauDeChange",
-  description: "Premium Currency Exchange Platform",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "AbujaBDC",
+  title: {
+    default: "Abuja Bureau De Change",
+    template: "%s | Abuja Bureau De Change"
   },
-  formatDetection: {
-    telephone: false,
-  },
+  description: "Premium currency exchange services in Nigeria. Exchange USD, GBP, EUR, NGN, and INR with real-time rates and instant processing.",
   icons: {
     icon: [
-      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' }
     ],
-    apple: [{ url: "/icons/icon-192x192.png" }],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
+    ],
+    other: [
+      {
+        rel: 'mask-icon',
+        url: '/safari-pinned-tab.svg',
+        color: '#4F46E5'
+      }
+    ]
   },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <head>
-          <meta name="theme-color" content="#4F46E5" />
-          <meta name="apple-mobile-web-app-capable" content="yes" />
-          <meta
-            name="apple-mobile-web-app-status-bar-style"
-            content="default"
-          />
-          <meta name="apple-mobile-web-app-title" content="AbujaBDC" />
-          <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        </head>
         <body className={inter.className}>
           <ThemeProvider
             attribute="class"
@@ -61,16 +56,13 @@ export default function RootLayout({ children }) {
             disableTransitionOnChange
           >
             <Providers>
-              <PWAProvider>
-                <RootWrapper>
-                  <BankingProvider>
-                    <Navbar />
-                    {children}
-                    <Toaster position="top-center" />
-                    <InstallButton />
-                  </BankingProvider>
-                </RootWrapper>
-              </PWAProvider>
+              <RootWrapper>
+                <BankingProvider>
+                  <Navbar />
+                  {children}
+                  <Toaster position="top-center" />
+                </BankingProvider>
+              </RootWrapper>
             </Providers>
           </ThemeProvider>
         </body>
