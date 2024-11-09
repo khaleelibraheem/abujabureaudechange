@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+    <defs>
+      <linearGradient id="walletGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#4F46E5" />
+        <stop offset="100%" stop-color="#3730A3" />
+      </linearGradient>
+    </defs>
+    <rect width="512" height="512" rx="128" fill="url(#walletGradient)" />
+    <path d="M144 192h224a32 32 0 0132 32v64a32 32 0 01-32 32H144a32 32 0 01-32-32v-64a32 32 0 0132-32z" stroke="white" stroke-width="16" fill="none" />
+    <circle cx="320" cy="256" r="16" fill="white" />
+  </svg>

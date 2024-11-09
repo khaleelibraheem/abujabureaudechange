@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" fill="none">
+    <defs>
+      <linearGradient id="ogGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#4F46E5" />
+        <stop offset="100%" stop-color="#3730A3" />
+      </linearGradient>
+      <!-- Soft glow effect -->
+      <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="8" />
+      </filter>
+    </defs>
+    
+    <!-- Background -->
+    <rect width="1200" height="630" fill="#0B0F1C" />
+    <path 
+      d="M0 0L1200 0L1200 630L0 630Z" 
+      fill="url(#ogGradient)" 
+      fill-opacity="0.1"
+    />
+    
+    <!-- Currency Exchange Icon -->
+    <g transform="translate(100, 165) scale(0.6)">
+      <circle cx="256" cy="256" r="256" fill="url(#ogGradient)" filter="url(#glow)" />
+      <path 
+        d="M256 96c-88.4 0-160 71.6-160 160s71.6 160 160 160 160-71.6 160-160S344.4 96 256 96zm0 280c-66.3 0-120-53.7-120-120s53.7-120 120-120 120 53.7 120 120-53.7 120-120 120z" 
+        fill="white" 
+        fill-opacity="0.9" 
+      />
+      <path 
+        d="M280 192l48 48-48 48M232 288l-48-48 48-48" 
+        stroke="white" 
+        stroke-width="24" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" 
+      />
+    </g>
+    
+    <!-- Text Content -->
+    <g transform="translate(420, 0)">
+      <!-- Company Name -->
+      <text 
+        x="0" 
+        y="280" 
+        fill="white" 
+        font-family="Inter, system-ui, sans-serif" 
+        font-size="72" 
+        font-weight="bold" 
+        letter-spacing="-0.02em"
+      >
+        AbujaBureauDeChange
+      </text>
+      
+      <!-- Tagline -->
+      <text 
+        x="0" 
+        y="340" 
+        fill="white" 
+        fill-opacity="0.8" 
+        font-family="Inter, system-ui, sans-serif" 
+        font-size="32"
+      >
+        Fast & Secure Currency Exchange
+      </text>
+      
+      <!-- Features -->
+      <g fill="white" fill-opacity="0.6" font-family="Inter, system-ui, sans-serif" font-size="24">
+        <text x="0" y="400">✓ Real-time Exchange Rates</text>
+        <text x="0" y="440">✓ Secure Transactions</text>
+        <text x="0" y="480">✓ Global Money Transfer</text>
+      </g>
+    </g>
+  </svg>
