@@ -74,15 +74,19 @@ export default function OurStory() {
                   className="relative flex items-center"
                 >
                   <div className="flex-1 pr-8 text-right">
-                    <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">
-                      {item.year}
-                    </div>
-                    <div className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                      {item.title}
-                    </div>
-                    <div className="text-gray-600 dark:text-gray-300">
-                      {item.description}
-                    </div>
+                    {index % 2 === 0 && (
+                      <>
+                        <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">
+                          {item.year}
+                        </div>
+                        <div className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                          {item.title}
+                        </div>
+                        <div className="text-gray-600 dark:text-gray-300">
+                          {item.description}
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center">
                     <div className="w-4 h-4 rounded-full bg-indigo-600 dark:bg-indigo-400" />

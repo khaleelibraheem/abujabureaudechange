@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHistoricalRates, useLiveRates } from "@/app/hooks/useExchangeRates";
+import staticRates from "@/lib/mock-data/static-rates";
 
 const supportedCurrencies = ["USD", "GBP", "EUR", "NGN", "INR"];
 
@@ -120,7 +121,7 @@ export default function ExchangeRates() {
             variant="outline"
             size="icon"
             onClick={() => refetchRates()}
-            className="animate-spin"
+            className=""
           >
             <RefreshCcw className="h-4 w-4" />
           </Button>
@@ -141,7 +142,7 @@ export default function ExchangeRates() {
             supportedCurrencies
               .filter((curr) => curr !== baseCurrency)
               .map((currency) => {
-                const rate = liveRates?.conversion_rates?.[currency] || 0;
+                const rate = staticRates[baseCurrency][currency];
                 const change = getRateChange(currency);
 
                 return (
@@ -186,8 +187,8 @@ export default function ExchangeRates() {
                         </div>
 
                         <div className="flex items-end gap-2 mb-4">
-                          <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                            {rate.toFixed(2)}
+                          <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                            {rate.toFixed(3)}
                           </span>
                           <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                             {currency}

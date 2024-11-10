@@ -27,7 +27,8 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem}
+    --radius: 0.5rem;
+  }
   .dark {
     --background: 224 71.4% 4.1%;
     --foreground: 210 20% 98%;
@@ -52,7 +53,8 @@
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%}
+    --chart-5: 340 75% 55%;
+  }
 }
 @layer base {
   * {
@@ -60,5 +62,65 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+#qr-scanner {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+}
+
+#qr-scanner video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 0.5rem !important;
+}
+
+#qr-scanner__scan_region {
+  display: none !important;
+}
+
+#qr-scanner__dashboard {
+  display: none !important;
+}
+
+#qr-scanner__status {
+  display: none !important;
+}
+
+/* Input Styles */
+.currency-input {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark Mode Enhancements */
+.dark .glass-morphism {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(10px);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 640px) {
+  .currency-select {
+    width: 80px !important;
   }
 }

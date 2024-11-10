@@ -7,6 +7,12 @@
     "background_color": "#4F46E5",
     "theme_color": "#4F46E5",
     "orientation": "portrait",
+    "id": "abuja-bdc-pwa",
+    "scope": "/",
+    "categories": [
+        "finance",
+        "business"
+    ],
     "icons": [
         {
             "src": "/icons/android-chrome-192x192.png",
@@ -30,5 +36,15 @@
             "type": "image/png",
             "purpose": "maskable"
         }
-    ]
+    ],
+    "prefer_related_applications": false,
+    "display_override": [
+        "window-controls-overlay"
+    ],
+    "launch_handler": {
+        "client_mode": [
+            "navigate-existing",
+            "auto"
+        ]
+    }
 }

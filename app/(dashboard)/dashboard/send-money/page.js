@@ -1,7 +1,19 @@
 "use client";
 
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { Html5Qrcode } from "html5-qrcode";
+import {
+  QrCode,
+  ScanLine,
+  Building2,
+  ArrowRight,
+  Info,
+  Copy,
+  Check,
+  AlertCircle,
+  ArrowLeftRight,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +39,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -37,26 +48,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { QrScanner } from "@yudiel/react-qr-scanner";
-import {
-  formatNumberWithCommas,
-  parseFormattedNumber,
-  formatCurrency,
-} from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import staticRates from "@/lib/mock-data/static-rates";
-import {
-  QrCode,
-  ScanLine,
-  Building2,
-  ArrowRight,
-  Info,
-  Copy,
-  Check,
-  AlertCircle,
-  RefreshCw,
-  ArrowLeftRight,
-} from "lucide-react";
 
+// Constants
 const CURRENCY_SYMBOLS = {
   NGN: "₦",
   USD: "$",
@@ -96,8 +91,82 @@ const variants = {
   },
 };
 
+// Helper Functions
+const formatAmount = (value, currency) => {
+  if (!value) return "";
+  const number = parseFloat(value);
+  if (isNaN(number)) return "";
+
+  return number.toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+};
+// QR Scanner Component
+function QRScanner({ onResult, onError }) {
+  const scannerRef = useRef(null);
+
+  useEffect(() => {
+    const scanner = new Html5Qrcode("qr-scanner");
+    scannerRef.current = scanner;
+
+    const startScanner = async () => {
+      try {
+        await scanner.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          (decodedText) => {
+            try {
+              const result = JSON.parse(decodedText);
+              onResult(result);
+            } catch (error) {
+              onError("Invalid QR code format");
+            }
+          },
+          (errorMessage) => {
+            console.log(errorMessage);
+          }
+        );
+      } catch (error) {
+        onError(
+          "Failed to start camera. Please ensure camera permissions are granted."
+        );
+      }
+    };
+
+    startScanner();
+
+    // Cleanup function
+    return () => {
+      if (scannerRef.current) {
+        // Check if scanner is running before stopping
+        if (scannerRef.current.isScanning) {
+          scannerRef.current
+            .stop()
+            .catch((err) => console.log("Scanner cleanup error:", err));
+        }
+      }
+    };
+  }, [onResult, onError]);
+
+  return (
+    <div className="relative w-full h-[300px] bg-black rounded-lg overflow-hidden">
+      <div id="qr-scanner" className="w-full h-full" />
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 border-2 border-white/30 rounded-lg" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-48 h-48 border-2 border-white rounded-lg" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SendMoneyPage() {
-  // State for transfer types
+  // State
   const [fromCurrency, setFromCurrency] = useState("USD");
   const [toCurrency, setToCurrency] = useState("EUR");
   const [intAmount, setIntAmount] = useState("");
@@ -107,36 +176,13 @@ export default function SendMoneyPage() {
   const [selectedBank, setSelectedBank] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [isScanning, setIsScanning] = useState(false);
-  const [scanError, setError] = useState("");
   const [isCopied, setIsCopied] = useState(false);
 
-  // Function to handle QR code scan
-  const handleScan = async (data) => {
-    if (data) {
-      try {
-        const scanData = JSON.parse(data);
-        if (scanData.accountNumber && scanData.bankId) {
-          setAccountNumber(scanData.accountNumber);
-          setSelectedBank(scanData.bankId);
-          setIsScanning(false);
-          toast.success("Account details scanned successfully!");
-        } else {
-          throw new Error("Invalid QR code format");
-        }
-      } catch (error) {
-        setError("Invalid QR code. Please try again.");
-        setTimeout(() => setError(""), 3000);
-      }
-    }
-  };
+  // Exchange rate calculation
+  const rate = staticRates[fromCurrency][toCurrency];
+  const convertedAmount = (parseFloat(intAmount || 0) * rate).toFixed(2);
 
-  const handleError = (err) => {
-    console.error(err);
-    setError(
-      "Failed to access camera. Please ensure camera permissions are granted."
-    );
-  };
-
+  // Handlers
   const handleAmountChange = (value, isLocal = false) => {
     if (value === "") {
       if (isLocal) {
@@ -163,26 +209,109 @@ export default function SendMoneyPage() {
       setIntAmount(rawValue);
     }
   };
+  // Dialog Component for QR Scanner
+  function QRScannerDialog({ isOpen, onClose, onScan }) {
+    const [error, setError] = useState("");
 
-  const formatAmount = (value, currency) => {
-    if (!value) return "";
-    const number = parseFloat(value);
-    if (isNaN(number)) return "";
+    const handleScanSuccess = (result) => {
+      onScan(result);
+      onClose();
+    };
 
-    return number.toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    });
+    const handleScanError = (errorMessage) => {
+      setError(errorMessage);
+      toast.error(errorMessage);
+    };
+
+    return (
+      <Dialog open={isScanning} onOpenChange={setIsScanning}>
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <QrCode className="h-4 w-4" />
+            Scan QR
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Scan QR Code</DialogTitle>
+            <DialogDescription>
+              Point your camera at the recipient&apos;s QR code to automatically
+              fill their details
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            {isScanning && (
+              <QRScanner
+                onResult={(data) => {
+                  if (data.accountNumber && data.bankId) {
+                    setAccountNumber(data.accountNumber);
+                    setSelectedBank(data.bankId);
+                    setIsScanning(false);
+                    toast.success("Account details scanned successfully!");
+                  } else {
+                    toast.error("Invalid QR code format");
+                  }
+                }}
+                onError={(error) => {
+                  toast.error(error);
+                }}
+              />
+            )}
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setIsScanning(false)}>
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  const handleScanSuccess = (data) => {
+    try {
+      if (data.accountNumber && data.bankId) {
+        setAccountNumber(data.accountNumber);
+        setSelectedBank(data.bankId);
+        toast.success("Account details scanned successfully!");
+      } else {
+        throw new Error("Invalid QR code format");
+      }
+    } catch (error) {
+      toast.error("Invalid QR code format");
+    }
   };
-
-  const rate = staticRates[fromCurrency][toCurrency];
-  const convertedAmount = (parseFloat(intAmount || 0) * rate).toFixed(2);
 
   const handleCopyAccount = (text) => {
     navigator.clipboard.writeText(text);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
     toast.success("Account number copied!");
+  };
+
+  const handleTransferSubmit = (isLocal) => {
+    const amount = isLocal ? localAmount : intAmount;
+    if (!amount || parseFloat(amount) <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    if (isLocal && (!accountNumber || !selectedBank)) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Add your transfer logic here
+    toast.success(
+      `Transfer initiated for ${formatCurrency(
+        parseFloat(amount),
+        isLocal ? "NGN" : fromCurrency
+      )}`
+    );
   };
 
   return (
@@ -201,6 +330,7 @@ export default function SendMoneyPage() {
           Fast and secure money transfers to anyone, anywhere.
         </p>
       </motion.div>
+
       {/* Main Tabs */}
       <Tabs defaultValue="local" className="space-y-6">
         <TabsList className="grid grid-cols-2 w-full bg-muted">
@@ -223,7 +353,6 @@ export default function SendMoneyPage() {
             </div>
           </TabsTrigger>
         </TabsList>
-
         {/* Local Transfer Content */}
         <TabsContent value="local">
           <Card className="border-none shadow-lg">
@@ -233,52 +362,19 @@ export default function SendMoneyPage() {
                   <CardTitle>Local Transfer</CardTitle>
                   <CardDescription>Send money within Nigeria</CardDescription>
                 </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <QrCode className="h-4 w-4" />
-                      Scan QR
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Scan Account QR Code</DialogTitle>
-                      <DialogDescription>
-                        Point your camera at the recipient&apos;s QR code to
-                        automatically fill their details
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="w-full aspect-square overflow-hidden rounded-lg">
-                      {isScanning ? (
-                        <QrScanner
-                          onDecode={handleScan}
-                          onError={handleError}
-                          className="w-full h-full"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800">
-                          <ScanLine className="h-12 w-12 text-gray-400 mb-4" />
-                          <Button onClick={() => setIsScanning(true)}>
-                            Start Scanning
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                    {scanError && (
-                      <Alert variant="destructive">
-                        <AlertDescription>{scanError}</AlertDescription>
-                      </Alert>
-                    )}
-                  </DialogContent>
-                </Dialog>
+                <div className="sm:hidden">
+                  <QRScannerDialog
+                    isOpen={isScanning}
+                    onClose={() => setIsScanning(false)}
+                    onScan={handleScanSuccess}
+                  />
+                </div>
               </div>
             </CardHeader>
+
             <CardContent className="space-y-6 pt-6">
               <div className="space-y-4">
+                {/* Amount Input */}
                 <div className="relative">
                   <label className="text-sm font-medium flex items-center gap-2 mb-2">
                     Amount (NGN)
@@ -300,11 +396,12 @@ export default function SendMoneyPage() {
                     onChange={(e) => handleAmountChange(e.target.value, true)}
                     className="text-lg pl-8 font-mono"
                   />
-                  <span className="absolute left-3 top-[2.5rem] text-gray-500 font-mono">
+                  <span className="absolute left-3 top-[2.15rem] text-gray-500 font-mono">
                     ₦
                   </span>
                 </div>
 
+                {/* Account Number Input */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
                     Account Number
@@ -320,6 +417,7 @@ export default function SendMoneyPage() {
                       value={accountNumber}
                       onChange={(e) => setAccountNumber(e.target.value)}
                       className="font-mono"
+                      maxLength={10}
                     />
                     {accountNumber && (
                       <Button
@@ -338,6 +436,7 @@ export default function SendMoneyPage() {
                   </div>
                 </div>
 
+                {/* Bank Selection */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Bank Name</label>
                   <Select value={selectedBank} onValueChange={setSelectedBank}>
@@ -358,14 +457,17 @@ export default function SendMoneyPage() {
                 </div>
               </div>
 
+              {/* Action Button */}
               <Button
                 className="w-full"
                 disabled={!localAmount || !accountNumber || !selectedBank}
+                onClick={() => handleTransferSubmit(true)}
               >
                 Continue to Send
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
 
+              {/* Info Alert */}
               <Alert className="bg-blue-50 dark:bg-blue-900/20">
                 <Info className="h-4 w-4 text-blue-500" />
                 <AlertDescription className="text-blue-600 dark:text-blue-400">
@@ -375,6 +477,8 @@ export default function SendMoneyPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* QR Scanner Dialog */}
 
         {/* International Transfer Content */}
         <TabsContent value="international">
@@ -494,6 +598,7 @@ export default function SendMoneyPage() {
                     Recipient Details
                   </h3>
 
+                  {/* Name Fields */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">First Name</label>
@@ -505,6 +610,7 @@ export default function SendMoneyPage() {
                     </div>
                   </div>
 
+                  {/* Bank Details */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
                       IBAN/Account Number
@@ -533,6 +639,7 @@ export default function SendMoneyPage() {
                     <Input placeholder="Recipient's bank name" />
                   </div>
 
+                  {/* Additional Bank Details */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
@@ -567,9 +674,11 @@ export default function SendMoneyPage() {
                   </div>
                 </div>
 
+                {/* Submit Button */}
                 <Button
                   className="w-full"
                   disabled={!intAmount || parseFloat(intAmount) <= 0}
+                  onClick={() => handleTransferSubmit(false)}
                 >
                   Review Transfer
                   <ArrowRight className="ml-2 h-4 w-4" />
