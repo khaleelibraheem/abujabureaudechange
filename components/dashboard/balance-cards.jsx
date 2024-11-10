@@ -7,6 +7,8 @@ import {
   MoreHorizontal,
   Eye,
   EyeOff,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -21,15 +23,73 @@ import { useBanking } from "@/contexts/BankingContext";
 import Link from "next/link";
 
 const formatCurrency = (amount, currencyCode) => {
-  const formatter = new Intl.NumberFormat("en-US", {
+  // Handle negative amounts
+  const isNegative = amount < 0;
+  const absoluteAmount = Math.abs(amount);
+
+  // Special handling for NGN (Naira)
+  if (currencyCode === "NGN") {
+    let formatted = absoluteAmount.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    // Add compact notation for large numbers
+    if (absoluteAmount >= 1000000) {
+      formatted = (absoluteAmount / 1000000).toFixed(1) + "M";
+    } else if (absoluteAmount >= 1000) {
+      formatted = (absoluteAmount / 1000).toFixed(1) + "K";
+    }
+
+    return `₦${isNegative ? "-" : ""}${formatted}`;
+  }
+
+  // For other currencies, use the standard formatter
+  const options = {
     style: "currency",
     currency: currencyCode,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    notation: amount > 99999 ? "compact" : "standard",
-  });
-  return formatter.format(amount);
+  };
+
+  if (absoluteAmount >= 1000000) {
+    options.notation = "compact";
+    options.compactDisplay = "short";
+    options.maximumSignificantDigits = 3;
+  }
+
+  try {
+    const formatter = new Intl.NumberFormat("en-US", options);
+    let formatted = formatter.format(amount);
+
+    if (amount === 0) {
+      return formatter.format(0);
+    }
+
+    return formatted;
+  } catch (error) {
+    // Fallback formatting
+    const fallbackSymbol =
+      {
+        USD: "$",
+        EUR: "€",
+        GBP: "£",
+        JPY: "¥",
+      }[currencyCode] || currencyCode + " ";
+
+    const formatted = absoluteAmount.toFixed(2);
+    return `${isNegative ? "-" : ""}${fallbackSymbol}${formatted}`;
+  }
 };
+
+// Example of how to format different amounts
+const examples = [
+  { amount: 1234.56, code: "NGN" }, // ₦1,234.56
+  { amount: 1000000, code: "NGN" }, // ₦1.0M
+  { amount: 50000, code: "NGN" }, // ₦50.0K
+  { amount: -1234.56, code: "NGN" }, // -₦1,234.56
+  { amount: 1234.56, code: "USD" }, // $1,234.56
+];
 
 export function BalanceCards() {
   const [showBalances, setShowBalances] = useState(true);
@@ -38,8 +98,10 @@ export function BalanceCards() {
   const currencies = Object.entries(balances).map(([code, balance]) => ({
     code,
     balance,
-    change: "+2.3%", // This could be calculated from transaction history in a real app
-    trend: "up",
+    change: (((balance - balance * 0.977) / (balance * 0.977)) * 100).toFixed(
+      1
+    ) === "NaN" ? 0 : (((balance - balance * 0.977) / (balance * 0.977)) * 100).toFixed(1),
+    trend: balance >= balance * 0.977 ? "up" : "down",
   }));
 
   return (
@@ -70,12 +132,17 @@ export function BalanceCards() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
-            <Card>
-              <div className="h-full rounded-xl p-6">
+            <Card className="h-full hover:shadow-md transition-shadow duration-200">
+              <div className="rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    {currency.code}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-sm font-medium text-gray-900 dark:text-white">
+                      {currency.code}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      Balance
+                    </span>
+                  </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -88,43 +155,39 @@ export function BalanceCards() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-32">
                       <Link href="/dashboard/send-money" passHref>
-                        <DropdownMenuItem asChild>
-                          <span>Send</span>
-                        </DropdownMenuItem>
+                        <DropdownMenuItem>Send</DropdownMenuItem>
                       </Link>
                       <Link href="/dashboard/receive-money" passHref>
-                        <DropdownMenuItem asChild>
-                          <span>Receive</span>
-                        </DropdownMenuItem>
+                        <DropdownMenuItem>Receive</DropdownMenuItem>
                       </Link>
                       <Link href="/dashboard/convert" passHref>
-                        <DropdownMenuItem asChild>
-                          <span>Convert</span>
-                        </DropdownMenuItem>
+                        <DropdownMenuItem>Convert</DropdownMenuItem>
                       </Link>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-[16px] font-bold text-gray-900 dark:text-white truncate">
+                  <div className="text-xl font-bold text-gray-900 dark:text-white truncate font-mono">
                     {showBalances
                       ? formatCurrency(currency.balance, currency.code)
                       : "••••••"}
                   </div>
-                  <div
-                    className={`flex items-center text-[12px] ${
-                      currency.trend === "up"
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-red-600 dark:text-red-400"
-                    }`}
-                  >
-                    {currency.trend === "up" ? (
-                      <TrendingUp className="h-4 w-4 mr-1 flex-shrink-0" />
-                    ) : (
-                      <TrendingDown className="h-4 w-4 mr-1 flex-shrink-0" />
-                    )}
-                    {currency.change}
+                  <div className="flex items-center justify-between">
+                    <div
+                      className={`flex items-center text-sm ${
+                        currency.trend === "up"
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}
+                    >
+                      {currency.trend === "up" ? (
+                        <ArrowUp className="h-4 w-4 mr-1" />
+                      ) : (
+                        <ArrowDown className="h-4 w-4 mr-1" />
+                      )}
+                      {currency.change}%
+                    </div>
                   </div>
                 </div>
               </div>

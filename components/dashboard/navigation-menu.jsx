@@ -25,7 +25,7 @@ export function NavigationMenu({ onItemClick }) {
           >
             <div className="flex items-center gap-3">
               <item.icon className="h-4 w-4" />
-              <span className="text-sm font-medium">{item.title}</span>
+              <span className="sm:text-sm font-medium">{item.title}</span>
             </div>
             <ChevronRight className="h-4 w-4 opacity-50" />
           </Link>

@@ -1,4 +1,3 @@
-// contexts/BankingContext.js
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
@@ -30,11 +29,11 @@ const initialBankAccounts = [
 export function BankingProvider({ children }) {
   // Balances state with initial values from your balance cards
   const [balances, setBalances] = useState({
-    USD: 140.5,
-    GBP: 3850.2,
-    EUR: 4120.8,
-    NGN: 50000.0,
-    INR: 5000.75,
+    USD: 0.00,
+    GBP: 0.00,
+    EUR: 0.00,
+    NGN: 0.00,
+    INR: 0.00,
   });
 
   const [bankAccounts, setBankAccounts] = useState(initialBankAccounts);

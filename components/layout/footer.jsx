@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
+import Logo from "../shared/logo";
+import { usePathname } from "next/navigation";
 
 const footerLinks = {
   services: [
@@ -36,18 +38,24 @@ const socialLinks = [
   { name: "YouTube", icon: Youtube, href: "#" },
 ];
 
+
+
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up") || pathname.startsWith("/admin")) {
+    return null;
+  }
+  
   return (
-    <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+    <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 text-[12px]">
       <div className="container px-4 mx-auto">
         {/* Main footer content */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-12 py-16">
           {/* Brand column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" className="inline-block mb-6">
-              <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-                AbujaBureauDeChange
-              </span>
+              <Logo />
             </Link>
             <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-md">
               Your trusted partner for premium currency exchange services.
@@ -73,7 +81,7 @@ export default function Footer() {
           {/* Links columns */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h3 className="text-gray-900 dark:text-white font-semibold mb-4 uppercase text-sm">
+              <h3 className="text-gray-900 dark:text-white font-semibold mb-4 uppercase">
                 {category}
               </h3>
               <ul className="space-y-3">
@@ -95,26 +103,26 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-gray-200 dark:border-gray-800 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-600 dark:text-gray-300 text-sm">
+            <p className="text-gray-600 dark:text-gray-300">
               © {new Date().getFullYear()} AbujaBureauDeChange. All rights
               reserved.
             </p>
             <div className="flex items-center gap-4">
               <Link
                 href="/privacy"
-                className="text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
               >
                 Privacy Policy
               </Link>
               <Link
                 href="/terms"
-                className="text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
               >
                 Terms of Service
               </Link>
               <Link
                 href="/cookies"
-                className="text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
               >
                 Cookie Settings
               </Link>

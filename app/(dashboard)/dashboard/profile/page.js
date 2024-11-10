@@ -16,6 +16,9 @@ import {
   CheckCircle,
   Eye,
   EyeOff,
+  Settings,
+  Lock,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -151,7 +154,7 @@ export default function ProfilePage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-8 max-w-5xl"
+      className="container mx-auto py-8 max-w-5xl"
     >
       {/* Header Section */}
       <div className="mb-8">
@@ -293,131 +296,176 @@ export default function ProfilePage() {
         </Card>
 
         {/* Account Actions Card */}
-        <Card className="shadow-lg">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Account Actions</CardTitle>
-            <CardDescription>
+        <Card className="shadow-lg transition-all duration-300 hover:shadow-xl">
+          <CardHeader className="space-y-2 border-b dark:border-gray-800 bg-gray-50 dark:bg-gray-900 rounded-t-lg">
+            <div className="flex items-center gap-2">
+              <Settings className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+              <CardTitle className="text-2xl">Account Actions</CardTitle>
+            </div>
+            <CardDescription className="text-gray-600 dark:text-gray-400">
               Manage your account status and security settings
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Alert variant="warning" className="mb-8">
-              <Shield className="h-4 w-4" />
-              <AlertTitle>Important Notice</AlertTitle>
-              <AlertDescription>
+
+          <CardContent className="pt-6">
+            <Alert
+              variant="warning"
+              className="mb-8 border-l-4 border-yellow-500"
+            >
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-yellow-600" />
+                <AlertTitle className="font-semibold">
+                  Important Notice
+                </AlertTitle>
+              </div>
+              <AlertDescription className="mt-2 text-sm">
                 The following actions will affect your account status. Please
                 proceed with caution.
               </AlertDescription>
             </Alert>
 
             <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Deactivate Account */}
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      <UserX className="h-4 w-4 mr-2" />
-                      Deactivate Account
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Deactivate Account</DialogTitle>
-                      <DialogDescription>
-                        Your account will be temporarily disabled. You can
-                        reactivate it by logging in again.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <Alert variant="destructive" className="mt-4">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Warning</AlertTitle>
-                      <AlertDescription>
-                        While deactivated, you won&apos;t be able to access any
-                        services or your funds.
-                      </AlertDescription>
-                    </Alert>
-                    <DialogFooter className="mt-6">
-                      <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
-                      </DialogClose>
-                      <Button
-                        variant="destructive"
-                        onClick={handleDeactivateAccount}
-                      >
-                        Confirm Deactivation
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Account Management Section */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Account Management
+                  </h3>
 
-                {/* Delete Account */}
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="destructive" className="w-full">
-                      <Trash className="h-4 w-4 mr-2" />
-                      Delete Account
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Delete Account</DialogTitle>
-                      <DialogDescription>
-                        This action is permanent and cannot be undone. All your
-                        data will be deleted.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <Alert variant="destructive" className="mt-4">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Warning</AlertTitle>
-                      <AlertDescription>
-                        All your account data, including transaction history,
-                        balances, and settings will be permanently erased.
-                      </AlertDescription>
-                    </Alert>
-                    <DialogFooter className="mt-6">
-                      <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
-                      </DialogClose>
+                  {/* Deactivate Account */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      >
+                        <UserX className="h-4 w-4 mr-2 text-gray-500" />
+                        Deactivate Account
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Lock className="h-5 w-5 text-orange-500" />
+                          Deactivate Account
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-600">
+                          Your account will be temporarily disabled. You can
+                          reactivate it by logging in again.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Alert
+                        variant="destructive"
+                        className="mt-4 bg-orange-50 dark:bg-orange-900/20 border-orange-200"
+                      >
+                        <AlertCircle className="h-4 w-4 text-orange-600" />
+                        <AlertTitle className="text-orange-700">
+                          Warning
+                        </AlertTitle>
+                        <AlertDescription className="text-orange-600">
+                          While deactivated, you won&apos;t be able to access
+                          any services or your funds.
+                        </AlertDescription>
+                      </Alert>
+                      <DialogFooter className="mt-6 gap-2">
+                        <DialogClose asChild>
+                          <Button variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <Button
+                          variant="destructive"
+                          onClick={handleDeactivateAccount}
+                          className="bg-orange-600 hover:bg-orange-700"
+                        >
+                          Confirm Deactivation
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Delete Account */}
+                  <Dialog>
+                    <DialogTrigger asChild>
                       <Button
                         variant="destructive"
-                        onClick={handleDeleteAccount}
+                        className="w-full bg-red-600 hover:bg-red-700"
                       >
-                        Permanently Delete
+                        <Trash className="h-4 w-4 mr-2" />
+                        Delete Account
                       </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Trash className="h-5 w-5 text-red-500" />
+                          Delete Account
+                        </DialogTitle>
+                        <DialogDescription>
+                          This action is permanent and cannot be undone. All
+                          your data will be deleted.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Alert variant="destructive" className="mt-4">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Critical Warning</AlertTitle>
+                        <AlertDescription>
+                          All your account data, including transaction history,
+                          balances, and settings will be permanently erased.
+                        </AlertDescription>
+                      </Alert>
+                      <DialogFooter className="mt-6 gap-2">
+                        <DialogClose asChild>
+                          <Button variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <Button
+                          variant="destructive"
+                          onClick={handleDeleteAccount}
+                        >
+                          Permanently Delete
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                {/* Quick Actions Section */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Quick Actions
+                  </h3>
+
+                  {/* Sign Out */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+                      >
+                        <LogOut className="h-4 w-4 mr-2 text-gray-600" />
+                        Sign Out
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <LogOut className="h-5 w-5 text-gray-600" />
+                          Sign Out
+                        </DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to sign out of your account?
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter className="mt-6 gap-2">
+                        <DialogClose asChild>
+                          <Button variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <SignOutButton>
+                          <Button>Sign Out</Button>
+                        </SignOutButton>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
-
-              {/* Sign Out */}
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="destructive" className="w-full sm:w-1/4">
-                    <Trash className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Sign Out</DialogTitle>
-                  </DialogHeader>
-                  <Alert variant="destructive" className="mt-4">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Warning</AlertTitle>
-                    <AlertDescription>
-                      This will sign you out of your account.
-                    </AlertDescription>
-                  </Alert>
-                  <DialogFooter className="mt-6">
-                    <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
-                    </DialogClose>
-                    <SignOutButton>
-                      <Button variant="destructive">Sign Out</Button>
-                    </SignOutButton>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
             </div>
           </CardContent>
         </Card>

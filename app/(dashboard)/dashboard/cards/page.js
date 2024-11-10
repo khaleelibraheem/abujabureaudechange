@@ -13,15 +13,11 @@ import {
   RefreshCw,
   Lock,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-// Function to generate random card number
 const generateCardNumber = () => {
-  const prefix = "4532"; // Visa-like prefix
+  const prefix = "4532";
   let number = prefix;
   for (let i = 0; i < 12; i++) {
     number += Math.floor(Math.random() * 10);
@@ -29,7 +25,6 @@ const generateCardNumber = () => {
   return number.match(/.{1,4}/g).join(" ");
 };
 
-// Function to generate expiry date
 const generateExpiryDate = () => {
   const date = new Date();
   const year = (date.getFullYear() + 4).toString().slice(-2);
@@ -37,7 +32,6 @@ const generateExpiryDate = () => {
   return `${month}/${year}`;
 };
 
-// Function to generate CVV
 const generateCVV = () => {
   return Math.floor(Math.random() * 900 + 100).toString();
 };
@@ -49,7 +43,6 @@ function CardsPage() {
   const [cardDetails, setCardDetails] = useState(null);
 
   useEffect(() => {
-    // Generate card details when component mounts
     setCardDetails({
       number: generateCardNumber(),
       expiry: generateExpiryDate(),
@@ -76,7 +69,6 @@ function CardsPage() {
         </p>
       </div>
 
-      {/* Virtual Card Display */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -84,50 +76,64 @@ function CardsPage() {
         className="relative"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-3xl blur-2xl opacity-20 pointer-events-none" />
-        <div className="relative w-full max-w-md mx-auto aspect-[1.586/1] bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl p-8 text-white shadow-xl">
+        <div className="relative w-full max-w-md mx-auto aspect-[1.586/1] bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl p-4 sm:p-8 text-white shadow-xl">
           {/* Chip and Network Logo */}
-          <div className="flex justify-between items-start mb-8">
-            <div className="w-12 h-10 bg-yellow-300/80 rounded-lg flex items-center justify-center">
-              <div className="w-8 h-6 bg-yellow-400/90 rounded" />
+          <div className="flex justify-between items-start mb-4 sm:mb-8">
+            <div className="w-8 h-6 sm:w-12 sm:h-10 bg-yellow-300/80 rounded-lg flex items-center justify-center">
+              <div className="w-6 h-4 sm:w-8 sm:h-6 bg-yellow-400/90 rounded" />
             </div>
-            <CreditCard className="w-10 h-10 text-white/80" />
+            <CreditCard className="w-8 h-8 sm:w-10 sm:h-10 text-white/80" />
           </div>
 
           {/* Card Number */}
-          <div className="mb-8">
-            <div className="text-2xl font-mono tracking-wider">
+          <div className="mb-4 sm:mb-8">
+            <div className="text-lg sm:text-2xl font-mono tracking-wider">
               {showCardDetails && cardDetails
                 ? cardDetails.number
                 : "•••• •••• •••• ••••"}
             </div>
           </div>
 
-          {/* Card Holder and Expiry */}
-          <div className="flex justify-between items-end">
-            <div>
-              <div className="text-xs text-white/60 mb-1">CARD HOLDER</div>
-              <div className="font-medium tracking-wide">
-                {user?.fullName?.toUpperCase() || "CARD HOLDER"}
+          {/* Card Details Container */}
+          <div className="flex flex-col sm:flex-row justify-between">
+            {/* Card Holder and Expiry */}
+            <div className="flex justify-between w-full sm:w-2/3 mb-4 sm:mb-0">
+              <div>
+                <div className="text-xs text-white/60 mb-1">CARD HOLDER</div>
+                <div className="text-sm sm:text-base font-medium tracking-wide">
+                  {user?.fullName?.toUpperCase() || "CARD HOLDER"}
+                </div>
+              </div>
+              <div className="text-right sm:hidden">
+                <div className="text-xs text-white/60 mb-1">EXPIRES</div>
+                <div className="text-sm font-medium">
+                  {showCardDetails && cardDetails
+                    ? cardDetails.expiry
+                    : "••/••"}
+                </div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-xs text-white/60 mb-1">EXPIRES</div>
-              <div className="font-medium">
-                {showCardDetails && cardDetails ? cardDetails.expiry : "••/••"}
-              </div>
-            </div>
-          </div>
 
-          {/* CVV */}
-          <div className="absolute right-8 bottom-8">
-            <div className="text-xs text-white/60 mb-1">CVV</div>
-            <div className="font-medium">
-              {showCardDetails && cardDetails ? cardDetails.cvv : "•••"}
+            {/* Expiry and CVV */}
+            <div className="flex justify-between sm:justify-end w-full sm:w-1/3">
+              <div className="hidden sm:block text-right">
+                <div className="text-xs text-white/60 mb-1">EXPIRES</div>
+                <div className="text-sm sm:text-base font-medium">
+                  {showCardDetails && cardDetails
+                    ? cardDetails.expiry
+                    : "••/••"}
+                </div>
+              </div>
+              <div className="text-right sm:absolute sm:right-8 sm:bottom-8">
+                <div className="text-xs text-white/60 mb-1">CVV</div>
+                <div className="text-sm sm:text-base font-medium">
+                  {showCardDetails && cardDetails ? cardDetails.cvv : "•••"}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Card Controls */}
         <div className="flex justify-center gap-4 mt-6">
           <Button
             variant="outline"
@@ -163,7 +169,6 @@ function CardsPage() {
         </div>
       </motion.div>
 
-      {/* Card Features */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
         {[
           {

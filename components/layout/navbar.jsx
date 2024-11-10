@@ -14,6 +14,7 @@ import {
   LayoutGrid,
   HelpCircle,
   ChevronRight,
+  Moon,
 } from "lucide-react";
 import {
   Sheet,
@@ -59,7 +60,8 @@ const Navbar = () => {
   if (
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up") ||
-    pathname.startsWith("/dashboard")
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/admin")
   ) {
     return null;
   }
@@ -132,13 +134,13 @@ const Navbar = () => {
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
-                <UserButton afterSignOutUrl="/" />
               </SignedIn>
             </div>
           </div>
 
           {/* Mobile Menu */}
-          <div className="lg:hidden">
+          <div className="lg:hidden flex gap-2 items-center">
+            <ThemeToggle />
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button
@@ -151,83 +153,94 @@ const Navbar = () => {
               </SheetTrigger>
               <SheetContent
                 side="right"
-                className="w-72 p-0 flex flex-col bg-white dark:bg-[#0B0F1C] border-l border-gray-200 dark:border-gray-800"
+                className="w-80 p-0 flex flex-col bg-white dark:bg-[#0B0F1C] border-l border-gray-200 dark:border-gray-800"
               >
-                <SheetHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+                <SheetHeader className="flex items-start px-4 py-3 border-b border-gray-200 dark:border-gray-800">
                   <SheetTitle>
                     <Logo />
                   </SheetTitle>
-                  <SheetDescription className="text-left text-sm text-gray-500 dark:text-gray-400">
+                  <SheetDescription className="text-sm text-gray-500 dark:text-gray-400">
                     Your trusted exchange partner
                   </SheetDescription>
                 </SheetHeader>
 
                 {/* Navigation Links */}
-                <div className="flex-1 overflow-y-auto">
-                  <div className="space-y-1">
-                    {navigation.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setIsOpen(false)}
-                        className={`flex items-center justify-between px-4 py-2.5 transition-colors ${
+                <div className="flex-1 overflow-y-auto py-2">
+                  {navigation.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`flex items-center gap-3 px-6 py-3 transition-colors ${
+                        pathname === item.href
+                          ? "bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                      }`}
+                    >
+                      <item.icon
+                        className={`h-5 w-5 ${
                           pathname === item.href
-                            ? "bg-indigo-600 dark:bg-indigo-600 text-white"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-100/10 hover:text-gray-900 dark:hover:text-white"
+                            ? "text-indigo-600 dark:text-indigo-400"
+                            : "text-gray-500 dark:text-gray-400"
                         }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <item.icon className="h-4 w-4" />
-                          <span className="text-sm font-medium">
-                            {item.name}
-                          </span>
-                        </div>
-                        <ChevronRight className="h-4 w-4 opacity-50" />
-                      </Link>
-                    ))}
-
-                    {/* Theme Toggle */}
-                    <div className="px-4 py-2.5">
-                      <div className="flex items-center justify-between text-gray-700 dark:text-gray-300">
-                        <span className="text-sm font-medium">Theme</span>
-                        <ThemeToggle />
-                      </div>
-                    </div>
-                  </div>
+                      />
+                      <span className="flex-1 font-medium">{item.name}</span>
+                      <ChevronRight
+                        className={`h-4 w-4 ${
+                          pathname === item.href
+                            ? "text-indigo-600 dark:text-indigo-400"
+                            : "text-gray-400"
+                        }`}
+                      />
+                    </Link>
+                  ))}
                 </div>
 
-                {/* User Section - Fixed at Bottom */}
-                <div className="mt-auto border-t border-gray-200 dark:border-gray-700">
-                  <div className="p-3">
-                    <SignedOut>
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          asChild
-                          onClick={() => setIsOpen(false)}
-                          variant="ghost"
-                          className="w-full"
-                        >
-                          <Link href="/sign-in">Sign In</Link>
-                        </Button>
-
-                        <Button
-                          asChild
-                          onClick={() => setIsOpen(false)}
-                          className="w-full"
-                        >
-                          <Link href="/sign-up">Get Started</Link>
-                        </Button>
-                      </div>
-                    </SignedOut>
-                    <SignedIn>
-                      <div className="flex items-center justify-between">
-                        <UserButton afterSignOutUrl="/" />
+                {/* User Profile Section */}
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+                  <SignedIn>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
                         <Link href="/dashboard">
-                          <Button>Dashboard</Button>
+                          <Button
+                            className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:opacity-90"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            Dashboard
+                            <ArrowRight className="w-4 h-4 ml-1" />
+                          </Button>
                         </Link>
                       </div>
-                    </SignedIn>
-                  </div>
+                    </div>
+                  </SignedIn>
+                  <SignedOut>
+                    <div className="flex gap-2">
+                      <Link href="/sign-in" className="flex-1">
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          Sign In
+                        </Button>
+                      </Link>
+                      <Link href="/sign-up" className="flex-1">
+                        <Button
+                          className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:opacity-90"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          Get Started
+                        </Button>
+                      </Link>
+                    </div>
+                  </SignedOut>
+                </div>          
+
+                {/* Footer Info */}
+                <div className="px-6 py-4 border-gray-200 dark:border-gray-800">
+                  <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                    © 2024 Abuja Bureau De Change.
+                  </p>
                 </div>
               </SheetContent>
             </Sheet>

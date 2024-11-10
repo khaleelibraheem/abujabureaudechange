@@ -44,11 +44,11 @@ export function MobileNavigation() {
           side="right"
           className="w-72 p-0 bg-white dark:bg-[#0B0F1C] border-r border-gray-200 dark:border-gray-800"
         >
-          <SheetHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+          <SheetHeader className="flex items-start px-4 py-3 border-b border-gray-200 dark:border-gray-800">
             <SheetTitle>
               <Logo />
             </SheetTitle>
-            <SheetDescription className="text-left text-sm text-gray-500 dark:text-gray-400">
+            <SheetDescription className="text-sm text-gray-500 dark:text-gray-400">
               Your trusted exchange partner
             </SheetDescription>
           </SheetHeader>
