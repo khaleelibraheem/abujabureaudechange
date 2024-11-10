@@ -102,61 +102,41 @@ const formatAmount = (value, currency) => {
     maximumFractionDigits: 2,
   });
 };
+
 // QR Scanner Component
 function QRScanner({ onResult, onError }) {
   const scannerRef = useRef(null);
 
   useEffect(() => {
-    const scanner = new Html5Qrcode("qr-scanner");
-    scannerRef.current = scanner;
+    let scanner;
+    try {
+      scanner = new Html5Qrcode("qr-scanner");
+      scannerRef.current = scanner;
 
-    const startScanner = async () => {
-      try {
-        await scanner.start(
-          { facingMode: { exact: "environment" } }, // Force rear camera
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-          },
-          (decodedText) => {
-            try {
-              const result = JSON.parse(decodedText);
-              // Handle the payment QR code format
-              if (result.currency && result.amount) {
-                // For payment QR
-                onResult({
-                  type: "payment",
-                  currency: result.currency,
-                  amount: result.amount,
-                  timestamp: result.timestamp,
-                });
-              } else if (result.accountNumber && result.bankId) {
-                // For account QR
-                onResult({
-                  type: "account",
-                  accountNumber: result.accountNumber,
-                  bankId: result.bankId,
-                });
-              } else {
-                throw new Error("Invalid QR code format");
-              }
-            } catch (error) {
-              onError("Invalid QR code format");
-            }
-          },
-          (errorMessage) => {
-            console.log(errorMessage);
+      scanner.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0,
+        },
+        (decodedText) => {
+          try {
+            const result = JSON.parse(decodedText);
+            onResult(result);
+          } catch (error) {
+            onError("Invalid QR code format");
           }
-        );
-      } catch (error) {
-        onError(
-          "Failed to start camera. Please ensure camera permissions are granted."
-        );
-      }
-    };
-
-    startScanner();
+        },
+        (errorMessage) => {
+          console.log(errorMessage);
+        }
+      );
+    } catch (error) {
+      onError(
+        "Failed to start camera. Please ensure camera permissions are granted."
+      );
+    }
 
     return () => {
       if (scannerRef.current && scannerRef.current.isScanning) {
@@ -175,11 +155,109 @@ function QRScanner({ onResult, onError }) {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-48 h-48 border-2 border-white rounded-lg" />
         </div>
+        <motion.div
+          className="absolute top-1/2 w-full h-0.5 bg-white/50"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "linear",
+          }}
+        />
       </div>
     </div>
   );
 }
 
+// Dialog Component for QR Scanner
+function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
+  const [error, setError] = useState("");
+  const [scannedData, setScannedData] = useState(null);
+
+  const handleScanResult = (result) => {
+    setScannedData(result);
+    onScanSuccess(result);
+  };
+
+  const handleScanError = (errorMessage) => {
+    setError(errorMessage);
+    toast.error(errorMessage);
+  };
+
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        className="flex items-center gap-2"
+        onClick={() => onClose(true)} // This opens the dialog
+      >
+        <QrCode className="h-4 w-4" />
+        Scan QR
+      </Button>
+
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Scan QR Code</DialogTitle>
+            <DialogDescription>
+              Point your camera at a payment QR code or account QR code
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-4">
+            {!scannedData && !error && (
+              <QRScanner
+                onResult={handleScanResult}
+                onError={handleScanError}
+              />
+            )}
+
+            {scannedData && (
+              <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <h3 className="font-medium">Scanned Details:</h3>
+                {scannedData.accountNumber && (
+                  <div className="space-y-2">
+                    <p>Account Number: {scannedData.accountNumber}</p>
+                    <p>
+                      Bank:{" "}
+                      {nigerianBanks.find((b) => b.id === scannedData.bankId)
+                        ?.name || scannedData.bankId}
+                    </p>
+                  </div>
+                )}
+                {scannedData.amount && (
+                  <div className="space-y-2">
+                    <p>
+                      Amount:{" "}
+                      {formatAmount(scannedData.amount, scannedData.currency)}
+                    </p>
+                    <p>Currency: {scannedData.currency}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setScannedData(null);
+                setError("");
+                onClose(false);
+              }}
+            >
+              {scannedData ? "Continue" : "Cancel"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
 
 export default function SendMoneyPage() {
   // State
@@ -225,59 +303,6 @@ export default function SendMoneyPage() {
       setIntAmount(rawValue);
     }
   };
-  // Dialog Component for QR Scanner
-function QRScannerDialog({ isOpen, onClose }) {
-  const [error, setError] = useState("");
-
-  const handleScanResult = (result) => {
-    if (result.type === "payment") {
-      // Handle payment QR code
-      setFromCurrency(result.currency);
-      setIntAmount(result.amount.toString());
-      setIntDisplayAmount(formatAmount(result.amount, result.currency));
-    } else if (result.type === "account") {
-      // Handle account QR code
-      setAccountNumber(result.accountNumber);
-      setSelectedBank(result.bankId);
-    }
-    setIsScanning(false);
-    toast.success("QR code scanned successfully!");
-  };
-
-  const handleScanError = (errorMessage) => {
-    setError(errorMessage);
-    toast.error(errorMessage);
-  };
-
-  return (
-    <Dialog open={isScanning} onOpenChange={setIsScanning}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
-          <QrCode className="h-4 w-4" />
-          Scan QR
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Scan QR Code</DialogTitle>
-          <DialogDescription>
-            Point your camera at a payment QR code or account QR code
-          </DialogDescription>
-        </DialogHeader>
-        <div className="mt-4">
-          {isScanning && (
-            <QRScanner onResult={handleScanResult} onError={handleScanError} />
-          )}
-        </div>
-        <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={() => setIsScanning(false)}>
-            Cancel
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
   const handleScanSuccess = (data) => {
     try {
@@ -285,6 +310,11 @@ function QRScannerDialog({ isOpen, onClose }) {
         setAccountNumber(data.accountNumber);
         setSelectedBank(data.bankId);
         toast.success("Account details scanned successfully!");
+      } else if (data.amount && data.currency) {
+        setIntAmount(data.amount.toString());
+        setIntDisplayAmount(formatAmount(data.amount, data.currency));
+        setFromCurrency(data.currency);
+        toast.success("Payment details scanned successfully!");
       } else {
         throw new Error("Invalid QR code format");
       }
@@ -312,7 +342,6 @@ function QRScannerDialog({ isOpen, onClose }) {
       return;
     }
 
-    // Add your transfer logic here
     toast.success(
       `Transfer initiated for ${formatCurrency(
         parseFloat(amount),
@@ -360,6 +389,7 @@ function QRScannerDialog({ isOpen, onClose }) {
             </div>
           </TabsTrigger>
         </TabsList>
+
         {/* Local Transfer Content */}
         <TabsContent value="local">
           <Card className="border-none shadow-lg">
@@ -369,13 +399,11 @@ function QRScannerDialog({ isOpen, onClose }) {
                   <CardTitle>Local Transfer</CardTitle>
                   <CardDescription>Send money within Nigeria</CardDescription>
                 </div>
-                <div className="sm:hidden">
-                  <QRScannerDialog
-                    isOpen={isScanning}
-                    onClose={() => setIsScanning(false)}
-                    onScan={handleScanSuccess}
-                  />
-                </div>
+                <QRScannerDialog
+                  isOpen={isScanning}
+                  onClose={setIsScanning}
+                  onScanSuccess={handleScanSuccess}
+                />
               </div>
             </CardHeader>
 
@@ -484,9 +512,6 @@ function QRScannerDialog({ isOpen, onClose }) {
             </CardContent>
           </Card>
         </TabsContent>
-
-        {/* QR Scanner Dialog */}
-
         {/* International Transfer Content */}
         <TabsContent value="international">
           <Card className="border-none shadow-lg">
@@ -722,7 +747,6 @@ function QRScannerDialog({ isOpen, onClose }) {
           </Alert>
         </TabsContent>
       </Tabs>
-
       {/* Security Note */}
       <motion.div
         variants={variants.listVariants}
