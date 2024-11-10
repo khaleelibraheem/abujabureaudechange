@@ -113,15 +113,34 @@ function QRScanner({ onResult, onError }) {
     const startScanner = async () => {
       try {
         await scanner.start(
-          { facingMode: "environment" },
+          { facingMode: { exact: "environment" } }, // Force rear camera
           {
             fps: 10,
             qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
           },
           (decodedText) => {
             try {
               const result = JSON.parse(decodedText);
-              onResult(result);
+              // Handle the payment QR code format
+              if (result.currency && result.amount) {
+                // For payment QR
+                onResult({
+                  type: "payment",
+                  currency: result.currency,
+                  amount: result.amount,
+                  timestamp: result.timestamp,
+                });
+              } else if (result.accountNumber && result.bankId) {
+                // For account QR
+                onResult({
+                  type: "account",
+                  accountNumber: result.accountNumber,
+                  bankId: result.bankId,
+                });
+              } else {
+                throw new Error("Invalid QR code format");
+              }
             } catch (error) {
               onError("Invalid QR code format");
             }
@@ -139,15 +158,11 @@ function QRScanner({ onResult, onError }) {
 
     startScanner();
 
-    // Cleanup function
     return () => {
-      if (scannerRef.current) {
-        // Check if scanner is running before stopping
-        if (scannerRef.current.isScanning) {
-          scannerRef.current
-            .stop()
-            .catch((err) => console.log("Scanner cleanup error:", err));
-        }
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        scannerRef.current
+          .stop()
+          .catch((err) => console.log("Scanner cleanup error:", err));
       }
     };
   }, [onResult, onError]);
@@ -164,6 +179,7 @@ function QRScanner({ onResult, onError }) {
     </div>
   );
 }
+
 
 export default function SendMoneyPage() {
   // State
@@ -210,67 +226,58 @@ export default function SendMoneyPage() {
     }
   };
   // Dialog Component for QR Scanner
-  function QRScannerDialog({ isOpen, onClose, onScan }) {
-    const [error, setError] = useState("");
+function QRScannerDialog({ isOpen, onClose }) {
+  const [error, setError] = useState("");
 
-    const handleScanSuccess = (result) => {
-      onScan(result);
-      onClose();
-    };
+  const handleScanResult = (result) => {
+    if (result.type === "payment") {
+      // Handle payment QR code
+      setFromCurrency(result.currency);
+      setIntAmount(result.amount.toString());
+      setIntDisplayAmount(formatAmount(result.amount, result.currency));
+    } else if (result.type === "account") {
+      // Handle account QR code
+      setAccountNumber(result.accountNumber);
+      setSelectedBank(result.bankId);
+    }
+    setIsScanning(false);
+    toast.success("QR code scanned successfully!");
+  };
 
-    const handleScanError = (errorMessage) => {
-      setError(errorMessage);
-      toast.error(errorMessage);
-    };
+  const handleScanError = (errorMessage) => {
+    setError(errorMessage);
+    toast.error(errorMessage);
+  };
 
-    return (
-      <Dialog open={isScanning} onOpenChange={setIsScanning}>
-        <DialogTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <QrCode className="h-4 w-4" />
-            Scan QR
+  return (
+    <Dialog open={isScanning} onOpenChange={setIsScanning}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <QrCode className="h-4 w-4" />
+          Scan QR
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Scan QR Code</DialogTitle>
+          <DialogDescription>
+            Point your camera at a payment QR code or account QR code
+          </DialogDescription>
+        </DialogHeader>
+        <div className="mt-4">
+          {isScanning && (
+            <QRScanner onResult={handleScanResult} onError={handleScanError} />
+          )}
+        </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={() => setIsScanning(false)}>
+            Cancel
           </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Scan QR Code</DialogTitle>
-            <DialogDescription>
-              Point your camera at the recipient&apos;s QR code to automatically
-              fill their details
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4">
-            {isScanning && (
-              <QRScanner
-                onResult={(data) => {
-                  if (data.accountNumber && data.bankId) {
-                    setAccountNumber(data.accountNumber);
-                    setSelectedBank(data.bankId);
-                    setIsScanning(false);
-                    toast.success("Account details scanned successfully!");
-                  } else {
-                    toast.error("Invalid QR code format");
-                  }
-                }}
-                onError={(error) => {
-                  toast.error(error);
-                }}
-              />
-            )}
-          </div>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setIsScanning(false)}>
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
   const handleScanSuccess = (data) => {
     try {

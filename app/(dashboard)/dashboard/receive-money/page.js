@@ -48,16 +48,20 @@ function ReceiveMoneyPage() {
     setAmount(rawValue);
   };
 
-  useEffect(() => {
-    setQrValue(
-      JSON.stringify({
-        currency: selectedCurrency,
-        amount: displayAmount || amount, // Use formatted amount for display
-        timestamp: new Date().toISOString(),
-      })
-    );
-  }, [selectedCurrency, amount, displayAmount]);
-
+ useEffect(() => {
+   // Only generate QR if we have both currency and amount
+   if (selectedCurrency && amount) {
+     setQrValue(
+       JSON.stringify({
+         currency: selectedCurrency,
+         amount: parseFloat(amount),
+         timestamp: new Date().toISOString(),
+       })
+     );
+   } else {
+     setQrValue(""); // Clear QR if missing required fields
+   }
+ }, [selectedCurrency, amount]);
   // Handle date updates
   useEffect(() => {
     setCurrentTime(new Date());
