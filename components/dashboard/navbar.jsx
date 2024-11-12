@@ -17,6 +17,14 @@ import Logo from "../shared/logo";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { ShieldCheck } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { usePathname } from "next/navigation";
 
 const notifications = [
   {
@@ -62,6 +70,7 @@ function NavbarSkeleton() {
 }
 
 export function DashboardNavbar({ user }) {
+  const pathname = usePathname();
   const { isLoaded } = useUser();
   const [mounted, setMounted] = useState(false);
 
@@ -88,6 +97,27 @@ export function DashboardNavbar({ user }) {
     }
   };
 
+  // Admin button component to maintain consistency
+  const AdminButton = ({ className = "", showLabel = false }) => (
+    <Link href="/admin">
+      <Button
+        variant="ghost"
+        size={showLabel ? "default" : "icon"}
+        className={`hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
+          pathname === "/admin"
+            ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
+            : ""
+        } ${className}`}
+      >
+        <ShieldCheck className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+        {showLabel && (
+          <span className="ml-2 text-indigo-600 dark:text-indigo-400">
+            Admin Dashboard
+          </span>
+        )}
+      </Button>
+    </Link>
+  );
   return (
     <div className="flex items-center justify-between h-16 px-4 lg:px-8 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 backdrop-blur-sm bg-opacity-80 dark:bg-opacity-80">
       <div className="flex items-center gap-6">
@@ -177,6 +207,13 @@ export function DashboardNavbar({ user }) {
 
         {mounted && <ThemeToggle />}
 
+        {/* Admin Button - Desktop */}
+        {user?.publicMetadata?.role === "admin" && (
+          <div className="hidden md:block">
+            <AdminButton />
+          </div>
+        )}
+
         {/* User Profile - Hidden on mobile */}
         <div className="hidden md:flex items-center gap-2">
           <DropdownMenu>
@@ -214,13 +251,22 @@ export function DashboardNavbar({ user }) {
                   Profile Settings
                 </DropdownMenuItem>
               </Link>
+              {/* Add admin link in dropdown as well for easy access */}
+              {user?.publicMetadata?.role === "admin" && (
+                <Link href="/admin">
+                  <DropdownMenuItem className="cursor-pointer text-indigo-600 dark:text-indigo-400">
+                    <ShieldCheck className="h-4 w-4 mr-2" />
+                    Admin Dashboard
+                  </DropdownMenuItem>
+                </Link>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
         {/* Mobile Navigation */}
         <div className="md:hidden">
-          <MobileNavigation />
+          <MobileNavigation user={user} />
         </div>
       </div>
     </div>

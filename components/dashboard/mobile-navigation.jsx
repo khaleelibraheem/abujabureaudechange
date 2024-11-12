@@ -14,7 +14,7 @@ import {
 import { NavigationMenu } from "./navigation-menu";
 import Logo from "../shared/logo";
 
-export function MobileNavigation() {
+export function MobileNavigation({ user }) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function MobileNavigation() {
           </SheetHeader>
 
           <div className="h-full">
-            <NavigationMenu onItemClick={() => setIsOpen(false)} />
+            <NavigationMenu user={user} onItemClick={() => setIsOpen(false)} />
           </div>
         </SheetContent>
       </Sheet>
