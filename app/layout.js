@@ -1,4 +1,4 @@
-import { Inter} from "next/font/google";
+import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/layout/navbar";
@@ -7,6 +7,7 @@ import "./globals.css";
 import Providers from "./providers";
 import { BankingProvider } from "@/contexts/BankingContext";
 import { Toaster } from "sonner";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const viewport = {
@@ -18,45 +19,62 @@ export const viewport = {
 };
 
 export const metadata = {
+  metadataBase: new URL("https://abujabureaudechange.vercel.app"),
+  canonical: "https://abujabureaudechange.vercel.app",
+
   title: {
-    default: "Abuja Bureau De Change",
     template: "%s | Abuja Bureau De Change",
+    default: "Abuja Bureau De Change - Premium Currency Exchange Services",
   },
   description:
     "Premium currency exchange services in Nigeria. Exchange USD, GBP, EUR, NGN, and INR with real-time rates and instant processing.",
+
+  keywords: [
+    "currency exchange",
+    "bureau de change",
+    "forex",
+    "nigeria",
+    "abuja",
+    "usd to ngn",
+    "gbp to ngn",
+    "eur to ngn",
+  ],
+
   applicationName: "Abuja Bureau De Change",
-  appleWebApp: {
-    capable: true,
-    title: "Abuja Bureau De Change",
-    statusBarStyle: "default",
+
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://abujabureaudechange.vercel.app",
+    title: "Abuja Bureau De Change - Premium Currency Exchange Services",
+    description: "Premium currency exchange services in Nigeria",
+    siteName: "Abuja Bureau De Change",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Abuja Bureau De Change",
+      },
+    ],
   },
-  formatDetection: {
-    telephone: false,
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Abuja Bureau De Change - Premium Currency Exchange Services",
+    description: "Premium currency exchange services in Nigeria",
+    images: ["/og-image.png"],
   },
+
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
       {
-        url: "/icons/android-chrome-192x192.png",
-        sizes: "192x192",
-        type: "image/png",
-      },
-      {
-        url: "/icons/android-chrome-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
-      },
-      {
-        url: "/icons/android-chrome-maskable-192x192.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "maskable",
-      },
-      {
-        url: "/icons/android-chrome-maskable-512x512.png",
+        url: "/icon-512x512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
@@ -65,15 +83,19 @@ export const metadata = {
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
-    other: [
-      {
-        rel: "mask-icon",
-        url: "/safari-pinned-tab.svg",
-        color: "#4F46E5",
-      },
-    ],
   },
+
   manifest: "/manifest.json",
+
+  appleWebApp: {
+    capable: true,
+    title: "Abuja Bureau De Change",
+    statusBarStyle: "default",
+  },
+
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({ children }) {
