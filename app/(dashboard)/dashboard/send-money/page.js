@@ -221,7 +221,7 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
                 {scannedData.accountNumber && (
                   <div className="space-y-2">
                     <p>Account Number: {scannedData.accountNumber}</p>
-                    <p>Bank: {scannedData.bankId}</p>
+                    <p>Bank: {scannedData.bankName}</p>
                   </div>
                 )}
                 {scannedData.amount && (
