@@ -221,11 +221,7 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
                 {scannedData.accountNumber && (
                   <div className="space-y-2">
                     <p>Account Number: {scannedData.accountNumber}</p>
-                    <p>
-                      Bank:{" "}
-                      {nigerianBanks.find((b) => b.id === scannedData.bankId)
-                        ?.name || scannedData.bankId}
-                    </p>
+                    <p>Bank: {scannedData.bankId}</p>
                   </div>
                 )}
                 {scannedData.amount && (

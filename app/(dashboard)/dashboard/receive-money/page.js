@@ -13,6 +13,8 @@ import {
   Share2,
   RefreshCw,
   AlertCircle,
+  Building2,
+  CreditCard,
 } from "lucide-react";
 import {
   Select,
@@ -51,6 +53,8 @@ const variants = {
 export default function ReceiveMoneyPage() {
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
   const [amount, setAmount] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
   const [copied, setCopied] = useState(false);
   const [qrValue, setQrValue] = useState("");
   const [displayAmount, setDisplayAmount] = useState("");
@@ -75,14 +79,21 @@ export default function ReceiveMoneyPage() {
     setAmount(rawValue);
   };
 
+  const handleAccountNumberChange = (e) => {
+    const value = e.target.value.replace(/\D/g, "");
+    setAccountNumber(value);
+  };
+
   useEffect(() => {
-    if (selectedCurrency && amount) {
+    if (selectedCurrency && amount && bankName && accountNumber) {
       setIsGenerating(true);
       const timer = setTimeout(() => {
         setQrValue(
           JSON.stringify({
             currency: selectedCurrency,
             amount: parseFloat(amount),
+            bankName: bankName,
+            accountNumber: accountNumber,
             timestamp: new Date().toISOString(),
           })
         );
@@ -92,7 +103,7 @@ export default function ReceiveMoneyPage() {
     } else {
       setQrValue("");
     }
-  }, [selectedCurrency, amount]);
+  }, [selectedCurrency, amount, bankName, accountNumber]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(qrValue);
@@ -113,7 +124,7 @@ export default function ReceiveMoneyPage() {
       const url = DOMURL.createObjectURL(svgBlob);
 
       img.onload = function () {
-        canvas.width = img.width * 2; // Higher resolution
+        canvas.width = img.width * 2;
         canvas.height = img.height * 2;
         ctx.scale(2, 2);
         ctx.drawImage(img, 0, 0);
@@ -137,16 +148,13 @@ export default function ReceiveMoneyPage() {
       try {
         await navigator.share({
           title: "Payment QR Code",
-          text: `Payment request for ${CURRENCY_SYMBOLS[selectedCurrency]}${amount}`,
+          text: `Payment request for ${CURRENCY_SYMBOLS[selectedCurrency]}${amount} to ${bankName} - ${accountNumber}`,
         });
       } catch (error) {
         console.log("Error sharing:", error);
       }
     }
   };
-
-  const expiryTime = new Date();
-  expiryTime.setHours(expiryTime.getHours() + 24);
 
   return (
     <motion.div
@@ -160,7 +168,7 @@ export default function ReceiveMoneyPage() {
           Receive Money
         </h1>
         <p className="text-gray-600 dark:text-gray-300">
-          Generate a secure QR code for instant payments
+          Generate a secure QR code for instant bank transfers
         </p>
         <Badge variant="outline" className="text-xs">
           QR codes valid for 24 hours
@@ -216,10 +224,40 @@ export default function ReceiveMoneyPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Bank Name</label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Enter bank name"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  className="pl-8"
+                />
+                <Building2 className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Account Number</label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Enter account number"
+                  value={accountNumber}
+                  onChange={handleAccountNumberChange}
+                  className="pl-8"
+                  maxLength={11}
+                  
+                />
+                <CreditCard className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-col items-center space-y-6">
-            {amount && selectedCurrency ? (
+            {amount && selectedCurrency && bankName && accountNumber ? (
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -256,7 +294,7 @@ export default function ReceiveMoneyPage() {
               <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-xl border-gray-200 dark:border-gray-700 w-full max-w-[300px]">
                 <QrCode className="w-12 h-12 text-gray-400 mb-3" />
                 <p className="text-gray-500 text-center">
-                  Enter amount and currency to generate QR code
+                  Fill in all details to generate QR code
                 </p>
               </div>
             )}
