@@ -157,7 +157,9 @@ const Navbar = () => {
               >
                 <SheetHeader className="flex items-start px-4 py-3 border-b border-gray-200 dark:border-gray-800">
                   <SheetTitle>
-                    <Logo />
+                    <Link href="/">
+                      <Logo />
+                    </Link>
                   </SheetTitle>
                   <SheetDescription className="text-sm text-gray-500 dark:text-gray-400">
                     Your trusted exchange partner
@@ -234,7 +236,7 @@ const Navbar = () => {
                       </Link>
                     </div>
                   </SignedOut>
-                </div>          
+                </div>
 
                 {/* Footer Info */}
                 <div className="px-6 py-4 border-gray-200 dark:border-gray-800">

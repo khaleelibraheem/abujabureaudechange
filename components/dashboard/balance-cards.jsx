@@ -1,199 +1,247 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  TrendingUp,
-  TrendingDown,
   MoreHorizontal,
   Eye,
   EyeOff,
   ArrowUp,
   ArrowDown,
+  Send,
+  Download,
+  RefreshCw,
+  Wallet,
+  TrendingUp,
 } from "lucide-react";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Card } from "../ui/card";
+import { Card } from "@/components/ui/card";
 import { useBanking } from "@/contexts/BankingContext";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const formatCurrency = (amount, currencyCode) => {
-  // Handle negative amounts
   const isNegative = amount < 0;
   const absoluteAmount = Math.abs(amount);
+  let formatted;
 
-  // Special handling for NGN (Naira)
   if (currencyCode === "NGN") {
-    let formatted = absoluteAmount.toLocaleString("en-US", {
+    formatted = `₦${absoluteAmount.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    });
-
-    // Add compact notation for large numbers
-    if (absoluteAmount >= 1000000) {
-      formatted = (absoluteAmount / 1000000).toFixed(1) + "M";
-    } else if (absoluteAmount >= 1000) {
-      formatted = (absoluteAmount / 1000).toFixed(1) + "K";
+    })}`;
+  } else {
+    try {
+      formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: currencyCode,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(absoluteAmount);
+    } catch (error) {
+      const fallbackSymbol =
+        { USD: "$", EUR: "€", GBP: "£", JPY: "¥" }[currencyCode] ||
+        `${currencyCode} `;
+      formatted = `${fallbackSymbol}${absoluteAmount.toFixed(2)}`;
     }
-
-    return `₦${isNegative ? "-" : ""}${formatted}`;
   }
 
-  // For other currencies, use the standard formatter
-  const options = {
-    style: "currency",
-    currency: currencyCode,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  };
-
-  if (absoluteAmount >= 1000000) {
-    options.notation = "compact";
-    options.compactDisplay = "short";
-    options.maximumSignificantDigits = 3;
+  if (isNegative) {
+    formatted = `-${formatted}`;
   }
 
-  try {
-    const formatter = new Intl.NumberFormat("en-US", options);
-    let formatted = formatter.format(amount);
+  const formattedLength = formatted.length;
+  const sizeClass =
+    formattedLength > 12
+      ? "text-lg"
+      : formattedLength > 9
+      ? "text-xl"
+      : "text-2xl";
 
-    if (amount === 0) {
-      return formatter.format(0);
-    }
-
-    return formatted;
-  } catch (error) {
-    // Fallback formatting
-    const fallbackSymbol =
-      {
-        USD: "$",
-        EUR: "€",
-        GBP: "£",
-        JPY: "¥",
-      }[currencyCode] || currencyCode + " ";
-
-    const formatted = absoluteAmount.toFixed(2);
-    return `${isNegative ? "-" : ""}${fallbackSymbol}${formatted}`;
-  }
+  return { value: formatted, sizeClass };
 };
-
-// Example of how to format different amounts
-const examples = [
-  { amount: 1234.56, code: "NGN" }, // ₦1,234.56
-  { amount: 1000000, code: "NGN" }, // ₦1.0M
-  { amount: 50000, code: "NGN" }, // ₦50.0K
-  { amount: -1234.56, code: "NGN" }, // -₦1,234.56
-  { amount: 1234.56, code: "USD" }, // $1,234.56
-];
 
 export function BalanceCards() {
   const [showBalances, setShowBalances] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { balances } = useBanking();
 
-  const currencies = Object.entries(balances).map(([code, balance]) => ({
-    code,
-    balance,
-    change: (((balance - balance * 0.977) / (balance * 0.977)) * 100).toFixed(
-      1
-    ) === "NaN" ? 0 : (((balance - balance * 0.977) / (balance * 0.977)) * 100).toFixed(1),
-    trend: balance >= balance * 0.977 ? "up" : "down",
-  }));
+  useEffect(() => {
+    const stored = localStorage.getItem("showBalances");
+    if (stored !== null) setShowBalances(JSON.parse(stored));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("showBalances", JSON.stringify(showBalances));
+  }, [showBalances]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsRefreshing(false);
+  };
+
+  const currencies = Object.entries(balances).map(([code, balance]) => {
+    const change =
+      parseFloat(
+        (((balance - balance * 0.977) / (balance * 0.977)) * 100).toFixed(1)
+      ) || 0;
+    return {
+      code,
+      balance,
+      change,
+      trend: balance >= balance * 0.977 ? "up" : "down",
+    };
+  });
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Your Balances
-        </h2>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowBalances(!showBalances)}
-          className="hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          {showBalances ? (
-            <EyeOff className="h-4 w-4" />
-          ) : (
-            <Eye className="h-4 w-4" />
-          )}
-        </Button>
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between px-4 sm:px-0">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-gradient-to-tr from-indigo-100 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/20">
+            <Wallet className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Your Balances
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {currencies.length} currencies available
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className={cn(
+              "flex-1 sm:flex-none transition-all duration-300",
+              isRefreshing && "opacity-50"
+            )}
+          >
+            <RefreshCw
+              className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")}
+            />
+            <span className="text-sm">Refresh</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowBalances(!showBalances)}
+            className="flex-1 sm:flex-none hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            {showBalances ? (
+              <>
+                <EyeOff className="h-4 w-4 mr-2" />
+                <span className="text-sm">Hide</span>
+              </>
+            ) : (
+              <>
+                <Eye className="h-4 w-4 mr-2" />
+                <span className="text-sm">Show</span>
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        {currencies.map((currency, index) => (
-          <motion.div
-            key={currency.code}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-          >
-            <Card className="h-full hover:shadow-md transition-shadow duration-200">
-              <div className="rounded-xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-medium text-gray-900 dark:text-white">
-                      {currency.code}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      Balance
-                    </span>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-32">
-                      <Link href="/dashboard/send-money" passHref>
-                        <DropdownMenuItem>Send</DropdownMenuItem>
-                      </Link>
-                      <Link href="/dashboard/receive-money" passHref>
-                        <DropdownMenuItem>Receive</DropdownMenuItem>
-                      </Link>
-                      <Link href="/dashboard/convert" passHref>
-                        <DropdownMenuItem>Convert</DropdownMenuItem>
-                      </Link>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:px-0">
+        <AnimatePresence mode="wait">
+          {currencies.map((currency, index) => (
+            <motion.div
+              key={currency.code}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: index * 0.05 }}
+            >
+              <Card className="overflow-hidden bg-white dark:bg-gray-900">
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-md">
+                      <span className="font-mono text-sm font-medium">
+                        {currency.code}
+                      </span>
+                    </div>
 
-                <div className="space-y-2">
-                  <div className="text-xl font-bold text-gray-900 dark:text-white truncate font-mono">
-                    {showBalances
-                      ? formatCurrency(currency.balance, currency.code)
-                      : "••••••"}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4 text-gray-500" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <Link href="/dashboard/send-money">
+                          <DropdownMenuItem>
+                            <Send className="h-4 w-4 mr-2" />
+                            Send
+                          </DropdownMenuItem>
+                        </Link>
+                        <Link href="/dashboard/receive-money">
+                          <DropdownMenuItem>
+                            <Download className="h-4 w-4 mr-2" />
+                            Receive
+                          </DropdownMenuItem>
+                        </Link>
+                        <DropdownMenuSeparator />
+                        <Link href="/dashboard/convert">
+                          <DropdownMenuItem>
+                            <TrendingUp className="h-4 w-4 mr-2" />
+                            Convert
+                          </DropdownMenuItem>
+                        </Link>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div
-                      className={`flex items-center text-sm ${
-                        currency.trend === "up"
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-red-600 dark:text-red-400"
-                      }`}
-                    >
-                      {currency.trend === "up" ? (
-                        <ArrowUp className="h-4 w-4 mr-1" />
-                      ) : (
-                        <ArrowDown className="h-4 w-4 mr-1" />
+
+                  <div>
+                    <motion.p
+                      className={cn(
+                        "font-mono font-bold mb-3",
+                        formatCurrency(currency.balance, currency.code)
+                          .sizeClass
                       )}
-                      {currency.change}%
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      {showBalances
+                        ? formatCurrency(currency.balance, currency.code).value
+                        : "••••••"}
+                    </motion.p>
+
+                    <div className="flex items-center gap-1.5">
+                      <div
+                        className={`flex items-center gap-1 text-sm ${
+                          currency.trend === "up"
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {currency.trend === "up" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )}
+                        {currency.change}%
+                      </div>
+                      <span className="text-xs text-gray-400">•</span>
+                      <span className="text-xs text-gray-400">24h</span>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          </motion.div>
-        ))}
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </div>
   );

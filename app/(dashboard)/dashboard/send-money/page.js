@@ -60,7 +60,7 @@ const CURRENCY_SYMBOLS = {
   INR: "₹",
 };
 
-const supportedCurrencies = ["USD", "EUR", "GBP", "NGN", "INR"];
+const supportedCurrencies = ["USD", "EUR", "GBP", "INR"];
 
 const nigerianBanks = [
   { id: "access", name: "Access Bank" },
@@ -311,9 +311,14 @@ export default function SendMoneyPage() {
         setSelectedBank(data.bankId);
         toast.success("Account details scanned successfully!");
       } else if (data.amount && data.currency) {
-        setIntAmount(data.amount.toString());
-        setIntDisplayAmount(formatAmount(data.amount, data.currency));
-        setFromCurrency(data.currency);
+        if (data.currency === "NGN") {
+          setLocalAmount(data.amount.toString());
+          setLocalDisplayAmount(formatAmount(data.amount, "NGN"));
+        } else {
+          setIntAmount(data.amount.toString());
+          setIntDisplayAmount(formatAmount(data.amount, data.currency));
+          setFromCurrency(data.currency);
+        }
         toast.success("Payment details scanned successfully!");
       } else {
         throw new Error("Invalid QR code format");
@@ -343,10 +348,11 @@ export default function SendMoneyPage() {
     }
 
     toast.success(
-      `Transfer initiated for ${formatCurrency(
-        parseFloat(amount),
-        isLocal ? "NGN" : fromCurrency
-      )}`
+      `Transfer initiated for ${
+        isLocal
+          ? `₦${formatAmount(parseFloat(amount))}`
+          : formatCurrency(parseFloat(amount), fromCurrency)
+      }`
     );
   };
 
@@ -357,11 +363,18 @@ export default function SendMoneyPage() {
       variants={variants.containerVariants}
       className="max-w-2xl mx-auto space-y-8 pb-8"
     >
-      {/* Header */}
+      {/* Header with QR Scanner Button */}
       <motion.div variants={variants.listVariants} className="space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Send Money
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Send Money
+          </h1>
+          <QRScannerDialog
+            isOpen={isScanning}
+            onClose={setIsScanning}
+            onScanSuccess={handleScanSuccess}
+          />
+        </div>
         <p className="text-gray-600 dark:text-gray-300 text-lg">
           Fast and secure money transfers to anyone, anywhere.
         </p>
@@ -394,17 +407,8 @@ export default function SendMoneyPage() {
         <TabsContent value="local">
           <Card className="border-none shadow-lg">
             <CardHeader className="border-b">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Local Transfer</CardTitle>
-                  <CardDescription>Send money within Nigeria</CardDescription>
-                </div>
-                <QRScannerDialog
-                  isOpen={isScanning}
-                  onClose={setIsScanning}
-                  onScanSuccess={handleScanSuccess}
-                />
-              </div>
+              <CardTitle>Local Transfer</CardTitle>
+              <CardDescription>Send money within Nigeria</CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6 pt-6">
@@ -512,6 +516,7 @@ export default function SendMoneyPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
         {/* International Transfer Content */}
         <TabsContent value="international">
           <Card className="border-none shadow-lg">

@@ -7,6 +7,13 @@
     "background_color": "#4F46E5",
     "theme_color": "#4F46E5",
     "orientation": "portrait",
+    "splash_screens": [
+        {
+            "src": "/splash.html",
+            "sizes": "any",
+            "type": "text/html"
+        }
+    ],
     "scope": "/",
     "categories": [
         "finance",

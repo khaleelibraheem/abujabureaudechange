@@ -9,7 +9,7 @@ export default async function DashboardPage() {
       <GreetingSection />
       <BalanceCards />
       <QuickActions />
-    <RecentTransactions />
+      <RecentTransactions />
     </div>
   );
 }

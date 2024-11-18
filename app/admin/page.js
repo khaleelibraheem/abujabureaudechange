@@ -39,10 +39,10 @@ import {
   Filler,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import DashboardHeader from "./components/dashboard-header";
 import { useAdmin } from "../hooks/useAdmin";
 import Unauthorized from "./components/unauthorized";
 import LoadingScreen from "./components/loading";
+import AdminDashboardHeader from "./components/admin-dashboard-header";
 // Register ChartJS components
 ChartJS.register(
   CategoryScale,
@@ -217,7 +217,7 @@ const AdminPanel = () => {
 
   return (
     <>
-      <DashboardHeader />
+      <AdminDashboardHeader />
 
       {/* Main Content */}
       <main className="pt-[80px] sm:pt-[100px] px-4 max-w-[1800px] mx-auto">

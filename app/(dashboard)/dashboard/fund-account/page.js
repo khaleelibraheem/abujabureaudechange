@@ -65,7 +65,7 @@ const variants = {
   listVariants: {
     hidden: { opacity: 0, x: -20 },
     visible: { opacity: 1, x: 0 },
-  }
+  },
 };
 
 const CURRENCY_SYMBOLS = {
@@ -86,8 +86,8 @@ const fundingMethods = [
     processingTime: "1-2 business days",
     fee: "Free",
     color: "blue",
-    minAmount: 100,
-    maxAmount: 1000000,
+    minAmount: 5,
+    maxAmount: Infinity,
   },
   {
     id: "card",
@@ -98,8 +98,8 @@ const fundingMethods = [
     processingTime: "Instant",
     fee: "2.5%",
     color: "green",
-    minAmount: 10,
-    maxAmount: 50000,
+    minAmount: 5,
+    maxAmount: Infinity,
   },
   {
     id: "crypto",
@@ -110,43 +110,53 @@ const fundingMethods = [
     processingTime: "10-30 minutes",
     fee: "1%",
     color: "purple",
-    minAmount: 20,
-    maxAmount: 100000,
+    minAmount: 5,
+    maxAmount: Infinity,
   },
 ];
 
 const formatAmount = (value, currency) => {
   // Remove all non-numeric characters except decimal point
-  const cleaned = value.replace(/[^0-9.]/g, '');
-  
-  // Ensure only one decimal point
-  const parts = cleaned.split('.');
-  const formatted = parts[0] + (parts.length > 1 ? '.' + parts[1].slice(0, 2) : '');
-  
-  if (formatted === '') return '';
-  
-  const number = parseFloat(formatted);
-  if (isNaN(number)) return '';
+  const cleaned = value.replace(/[^0-9.]/g, "");
 
-  return number.toLocaleString('en-US', {
+  // Ensure only one decimal point
+  const parts = cleaned.split(".");
+  const formatted =
+    parts[0] + (parts.length > 1 ? "." + parts[1].slice(0, 2) : "");
+
+  if (formatted === "") return "";
+
+  const number = parseFloat(formatted);
+  if (isNaN(number)) return "";
+
+  return number.toLocaleString("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
 };
 
 const formatCurrency = (amount, currency) => {
+  // Special handling for NGN to use ₦ symbol
+  if (currency === "NGN") {
+    return `₦${amount.toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+
+  // Regular handling for other currencies
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-      notation: amount > 99999 ? "compact" : "standard",
+      notation: "standard",
     }).format(amount);
   } catch (error) {
     // Fallback formatting for unsupported currencies
     const symbol = CURRENCY_SYMBOLS[currency] || currency + " ";
-    return `${symbol}${amount.toLocaleString('en-US', {
+    return `${symbol}${amount.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
@@ -155,9 +165,9 @@ const formatCurrency = (amount, currency) => {
 
 const calculateFee = (method, amount) => {
   switch (method) {
-    case 'card':
+    case "card":
       return amount * 0.025; // 2.5%
-    case 'crypto':
+    case "crypto":
       return amount * 0.01; // 1%
     default:
       return 0;
@@ -220,6 +230,7 @@ function QRCodeWithDownload({ value, size = 156 }) {
     </div>
   );
 }
+
 export default function FundAccountPage() {
   const { handleFunding } = useBanking();
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
@@ -260,12 +271,12 @@ export default function FundAccountPage() {
     }
 
     const method = fundingMethods.find((m) => m.id === selectedMethod);
-    if (numAmount < method.minAmount || numAmount > method.maxAmount) {
+    if (numAmount < method.minAmount) {
       toast.error(
-        `Amount must be between ${formatCurrency(
+        `Amount must be at least ${formatCurrency(
           method.minAmount,
           selectedCurrency
-        )} and ${formatCurrency(method.maxAmount, selectedCurrency)}`
+        )}`
       );
       return;
     }
@@ -483,8 +494,8 @@ export default function FundAccountPage() {
                     <AlertDescription>
                       Min: {formatCurrency(method.minAmount, selectedCurrency)}{" "}
                       | Max:{" "}
-                      {formatCurrency(method.maxAmount, selectedCurrency)} per
-                      transaction
+                      {/* {formatCurrency(method.maxAmount, selectedCurrency)} */}
+                      unlimited per transaction
                     </AlertDescription>
                   </Alert>
                 </CardHeader>
@@ -538,8 +549,8 @@ export default function FundAccountPage() {
                       </div>
 
                       <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200">
-                        <Info className="h-4 w-4 text-blue-500" />
-                        <AlertDescription className="text-blue-600 dark:text-blue-400">
+                        <Info className="h-4 w-4 text-blue-500 mt-[-4px]" />
+                        <AlertDescription className="text-xs md:text-sm text-blue-600 dark:text-blue-400">
                           Use your name as transfer reference to ensure quick
                           processing
                         </AlertDescription>

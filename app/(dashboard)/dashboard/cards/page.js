@@ -1,21 +1,13 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
-import {
-  CreditCard,
-  Eye,
-  EyeOff,
-  Copy,
-  Check,
-  Shield,
-  RefreshCw,
-  Lock,
-} from "lucide-react";
+import { AlertTriangle, Lock, RefreshCw, Shield, Wallet } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import VirtualCard from "@/components/virtualCard/VirtualCard";
 
+// Utility functions
 const generateCardNumber = () => {
   const prefix = "4532";
   let number = prefix;
@@ -38,136 +30,136 @@ const generateCVV = () => {
 
 function CardsPage() {
   const { user } = useUser();
-  const [showCardDetails, setShowCardDetails] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [cardDetails, setCardDetails] = useState(null);
+  const [showCardDetails, setShowCardDetails] = useState({
+    primary: false,
+    secondary: false,
+  });
+  const [copied, setCopied] = useState({ primary: false, secondary: false });
+  const [cardDetails, setCardDetails] = useState({
+    primary: null,
+    secondary: null,
+  });
+  const [lockedCards, setLockedCards] = useState({
+    primary: false,
+    secondary: false,
+  });
+  const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
     setCardDetails({
-      number: generateCardNumber(),
-      expiry: generateExpiryDate(),
-      cvv: generateCVV(),
+      primary: {
+        number: generateCardNumber(),
+        expiry: generateExpiryDate(),
+        cvv: generateCVV(),
+      },
+      secondary: {
+        number: generateCardNumber(),
+        expiry: generateExpiryDate(),
+        cvv: generateCVV(),
+      },
     });
   }, []);
 
-  const handleCopy = () => {
-    if (cardDetails) {
-      navigator.clipboard.writeText(cardDetails.number.replace(/\s/g, ""));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
+  const handleCopy = useCallback(
+    (cardType) => {
+      if (cardDetails[cardType] && !lockedCards[cardType]) {
+        navigator.clipboard.writeText(
+          cardDetails[cardType].number.replace(/\s/g, "")
+        );
+        setCopied((prev) => ({ ...prev, [cardType]: true }));
+        setTimeout(
+          () => setCopied((prev) => ({ ...prev, [cardType]: false })),
+          2000
+        );
+      } else {
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
+      }
+    },
+    [cardDetails, lockedCards]
+  );
+
+  const toggleCardDetails = useCallback(
+    (cardType) => {
+      if (!lockedCards[cardType]) {
+        setShowCardDetails((prev) => ({
+          ...prev,
+          [cardType]: !prev[cardType],
+        }));
+      } else {
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
+      }
+    },
+    [lockedCards]
+  );
+
+  const toggleLock = useCallback((cardType) => {
+    setLockedCards((prev) => {
+      const newState = { ...prev, [cardType]: !prev[cardType] };
+      if (newState[cardType]) {
+        setShowCardDetails((prev) => ({ ...prev, [cardType]: false }));
+      }
+      return newState;
+    });
+  }, []);
+
+  const cardTypes = [
+    {
+      type: "primary",
+      gradient: "bg-gradient-to-br from-indigo-600 to-purple-600",
+      bankName: "GLOBAL BANK",
+    },
+    {
+      type: "secondary",
+      gradient: "bg-gradient-to-br from-blue-600 to-cyan-600",
+      bankName: "DIGITAL BANK",
+    },
+  ];
 
   return (
     <div className="space-y-8">
+      {showAlert && (
+        <Alert
+          variant="destructive"
+          className="fixed top-4 right-4 w-auto z-50"
+        >
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Card is locked. Unlock to perform this action.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          Virtual Card
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Your secure virtual card for online transactions
+        <div className="flex items-center gap-2 mb-2">
+          <Wallet className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Virtual Cards
+          </h1>
+        </div>
+        <p className="text-gray-600 dark:text-gray-300 text-sm">
+          Your secure virtual cards for online transactions
         </p>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-3xl blur-2xl opacity-20 pointer-events-none" />
-        <div className="relative w-full max-w-md mx-auto aspect-[1.586/1] bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl p-4 sm:p-8 text-white shadow-xl">
-          {/* Chip and Network Logo */}
-          <div className="flex justify-between items-start mb-4 sm:mb-8">
-            <div className="w-8 h-6 sm:w-12 sm:h-10 bg-yellow-300/80 rounded-lg flex items-center justify-center">
-              <div className="w-6 h-4 sm:w-8 sm:h-6 bg-yellow-400/90 rounded" />
-            </div>
-            <CreditCard className="w-8 h-8 sm:w-10 sm:h-10 text-white/80" />
-          </div>
-
-          {/* Card Number */}
-          <div className="mb-4 sm:mb-8">
-            <div className="text-lg sm:text-2xl font-mono tracking-wider">
-              {showCardDetails && cardDetails
-                ? cardDetails.number
-                : "•••• •••• •••• ••••"}
-            </div>
-          </div>
-
-          {/* Card Details Container */}
-          <div className="flex flex-col sm:flex-row justify-between">
-            {/* Card Holder and Expiry */}
-            <div className="flex justify-between w-full sm:w-2/3 mb-4 sm:mb-0">
-              <div>
-                <div className="text-xs text-white/60 mb-1">CARD HOLDER</div>
-                <div className="text-sm sm:text-base font-medium tracking-wide">
-                  {user?.fullName?.toUpperCase() || "CARD HOLDER"}
-                </div>
-              </div>
-              <div className="text-right sm:hidden">
-                <div className="text-xs text-white/60 mb-1">EXPIRES</div>
-                <div className="text-sm font-medium">
-                  {showCardDetails && cardDetails
-                    ? cardDetails.expiry
-                    : "••/••"}
-                </div>
-              </div>
-            </div>
-
-            {/* Expiry and CVV */}
-            <div className="flex justify-between sm:justify-end w-full sm:w-1/3">
-              <div className="hidden sm:block text-right">
-                <div className="text-xs text-white/60 mb-1">EXPIRES</div>
-                <div className="text-sm sm:text-base font-medium">
-                  {showCardDetails && cardDetails
-                    ? cardDetails.expiry
-                    : "••/••"}
-                </div>
-              </div>
-              <div className="text-right sm:absolute sm:right-8 sm:bottom-8">
-                <div className="text-xs text-white/60 mb-1">CVV</div>
-                <div className="text-sm sm:text-base font-medium">
-                  {showCardDetails && cardDetails ? cardDetails.cvv : "•••"}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-center gap-4 mt-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowCardDetails(!showCardDetails)}
-            className="cursor-pointer"
-          >
-            {showCardDetails ? (
-              <>
-                <EyeOff className="h-4 w-4 mr-2" />
-                Hide Details
-              </>
-            ) : (
-              <>
-                <Eye className="h-4 w-4 mr-2" />
-                Show Details
-              </>
-            )}
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleCopy}>
-            {copied ? (
-              <>
-                <Check className="h-4 w-4 mr-2" />
-                Copied
-              </>
-            ) : (
-              <>
-                <Copy className="h-4 w-4 mr-2" />
-                Copy Number
-              </>
-            )}
-          </Button>
-        </div>
-      </motion.div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {cardTypes.map(({ type, gradient, bankName }) => (
+          <VirtualCard
+            key={type}
+            cardDetails={cardDetails?.[type]}
+            showCardDetails={showCardDetails[type]}
+            gradient={gradient}
+            user={user}
+            bankName={bankName}
+            isLocked={lockedCards[type]}
+            onToggleDetails={() => toggleCardDetails(type)}
+            onCopy={() => handleCopy(type)}
+            onLock={() => toggleLock(type)}
+            copied={copied[type]}
+          />
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
         {[
@@ -184,7 +176,7 @@ function CardsPage() {
           {
             icon: Lock,
             title: "Instant Lock",
-            description: "Freeze card instantly if needed",
+            description: "Freeze cards instantly if needed",
           },
         ].map((feature, index) => (
           <Card key={index}>

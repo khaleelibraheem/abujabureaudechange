@@ -58,7 +58,7 @@ const notifications = [
 
 function NavbarSkeleton() {
   return (
-    <div className="flex items-center justify-between h-16 px-4 lg:px-8 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+    <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
       <div className="flex items-center gap-4">
         <div className="w-32 h-8 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
       </div>
@@ -119,7 +119,7 @@ export function DashboardNavbar({ user }) {
     </Link>
   );
   return (
-    <div className="flex items-center justify-between h-16 px-4 lg:px-8 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 backdrop-blur-sm bg-opacity-80 dark:bg-opacity-80">
+    <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 backdrop-blur-sm bg-opacity-80 dark:bg-opacity-80">
       <div className="flex items-center gap-6">
         <Link href="/" className="transition-opacity hover:opacity-80">
           <Logo />

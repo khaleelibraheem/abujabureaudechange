@@ -6,10 +6,10 @@ import { Activity, AlertTriangle, Menu, Settings, Users, X } from "lucide-react"
 import ScrollHeader from "./scroll-header";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import Link from "next/link";
 
 
-// First, create a separate header component for better organization
-const DashboardHeader = () => {
+const AdminDashboardHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -19,7 +19,9 @@ const DashboardHeader = () => {
         <div className="h-16 flex items-center justify-between">
           {/* Left side - Logo */}
           <div className="flex items-center gap-3">
-            <Logo />
+            <Link href="/">
+              <Logo />
+            </Link>
             <div className="hidden md:block h-6 w-px bg-gray-200 dark:bg-gray-800" />
             <div className="hidden md:flex flex-col">
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -153,4 +155,4 @@ const DashboardHeader = () => {
   );
 };
 
-export default DashboardHeader;
+export default AdminDashboardHeader;

@@ -75,8 +75,8 @@ const withdrawalMethods = [
     icon: Building2,
     processingTime: "1-2 business days",
     fee: "Free",
-    minAmount: 50,
-    maxAmount: 50000,
+    minAmount: 5,
+    maxAmount: Infinity,
     color: "blue",
   },
   {
@@ -87,8 +87,8 @@ const withdrawalMethods = [
     icon: CreditCard,
     processingTime: "Instant",
     fee: "1.5%",
-    minAmount: 10,
-    maxAmount: 25000,
+    minAmount: 5,
+    maxAmount: Infinity,
     color: "green",
   },
   {
@@ -99,11 +99,12 @@ const withdrawalMethods = [
     icon: Wallet,
     processingTime: "10-30 minutes",
     fee: "Network fee",
-    minAmount: 20,
-    maxAmount: 100000,
+    minAmount: 5,
+    maxAmount: Infinity,
     color: "purple",
   },
 ];
+
 
 const CURRENCY_SYMBOLS = {
   NGN: "₦",
@@ -138,13 +139,22 @@ const formatAmount = (value, currency) => {
 };
 
 const formatCurrency = (amount, currency) => {
+  // Special handling for NGN to use ₦ symbol
+  if (currency === "NGN") {
+    return `₦${amount.toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+
+  // Regular handling for other currencies
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-      notation: amount > 99999 ? "compact" : "standard",
+      notation: "standard",
     }).format(amount);
   } catch (error) {
     // Fallback formatting for unsupported currencies
@@ -212,53 +222,50 @@ export default function WithdrawalsPage() {
       }
     }
   };
-  const handleWithdrawalSubmit = async () => {
-    const numAmount = parseFloat(amount);
+ const handleWithdrawalSubmit = async () => {
+   const numAmount = parseFloat(amount);
 
-    if (!numAmount || numAmount <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
+   if (!numAmount || numAmount <= 0) {
+     toast.error("Please enter a valid amount");
+     return;
+   }
 
-    const method = withdrawalMethods.find((m) => m.id === selectedMethod);
-    if (numAmount < method.minAmount || numAmount > method.maxAmount) {
-      toast.error(
-        `Amount must be between ${formatCurrency(
-          method.minAmount,
-          selectedCurrency
-        )} and ${formatCurrency(method.maxAmount, selectedCurrency)}`
-      );
-      return;
-    }
+   const method = withdrawalMethods.find((m) => m.id === selectedMethod);
+   if (numAmount < method.minAmount) {
+     toast.error(
+       `Minimum withdrawal amount is ${formatCurrency(
+         method.minAmount,
+         selectedCurrency
+       )}`
+     );
+     return;
+   }
 
-    if (numAmount > balances[selectedCurrency]) {
-      toast.error("Insufficient balance");
-      return;
-    }
+   if (numAmount > balances[selectedCurrency]) {
+     toast.error("Insufficient balance");
+     return;
+   }
 
-    setIsProcessing(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const success = handleWithdrawal(numAmount, selectedCurrency);
+   setIsProcessing(true);
+   try {
+     // Simulate API call
+     await new Promise((resolve) => setTimeout(resolve, 2000));
+     const success = handleWithdrawal(numAmount, selectedCurrency);
 
-      if (success) {
-        toast.success(
-          `Successfully withdrawn ${formatCurrency(
-            numAmount,
-            selectedCurrency
-          )}`
-        );
-        setAmount("");
-      } else {
-        throw new Error("Withdrawal failed");
-      }
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+     if (success) {
+       toast.success(
+         `Successfully withdrawn ${formatCurrency(numAmount, selectedCurrency)}`
+       );
+       setAmount("");
+     } else {
+       throw new Error("Withdrawal failed");
+     }
+   } catch (error) {
+     toast.error(error.message);
+   } finally {
+     setIsProcessing(false);
+   }
+ };
 
   return (
     <motion.div
@@ -280,7 +287,7 @@ export default function WithdrawalsPage() {
       {/* Enhanced Balance Cards */}
       <motion.div
         variants={variants.containerVariants}
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+        className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"
       >
         {Object.entries(balances).map(([currency, balance]) => (
           <motion.div
@@ -291,24 +298,28 @@ export default function WithdrawalsPage() {
           >
             <Card
               className={`relative overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer ${
-                currency === selectedCurrency ? "ring-2 ring-indigo-500" : ""
+                currency === selectedCurrency
+                  ? "bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20"
+                  : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
               }`}
               onClick={() => setSelectedCurrency(currency)}
             >
-              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-blue-500" />
-              <CardContent className="pt-4">
-                <div className="space-y-1">
+              <CardContent className="p-4">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       {currency}
                     </p>
                     {currency === selectedCurrency && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge
+                        variant="secondary"
+                        className="text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
+                      >
                         Selected
                       </Badge>
                     )}
                   </div>
-                  <p className="text-lg font-bold text-gray-900 dark:text-white font-mono">
+                  <p className="text-lg font-bold text-gray-900 dark:text-white font-mono tracking-tight">
                     {formatCurrency(balance, currency)}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -512,7 +523,7 @@ export default function WithdrawalsPage() {
                     <AlertDescription>
                       Min: {formatCurrency(method.minAmount, selectedCurrency)}{" "}
                       | Max:{" "}
-                      {formatCurrency(method.maxAmount, selectedCurrency)} per
+                      {/* {formatCurrency(method.maxAmount, selectedCurrency)} */} unlimited per
                       transaction
                     </AlertDescription>
                   </Alert>
@@ -799,7 +810,7 @@ export default function WithdrawalsPage() {
                         <>
                           Withdraw{" "}
                           {amount > 0 &&
-                            formatCurrency(amount, selectedCurrency)}
+                            formatCurrency(parseFloat(amount), selectedCurrency)}
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </>
                       )}
