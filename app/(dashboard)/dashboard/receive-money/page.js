@@ -330,8 +330,8 @@ export default function ReceiveMoneyPage() {
 
         <CardFooter>
           <Alert className="bg-blue-50 dark:bg-blue-900/20 mt-4">
-            <AlertCircle className="h-4 w-4 text-blue-500" />
-            <AlertDescription className="text-blue-600 dark:text-blue-400">
+            <AlertCircle className="h-4 w-4 text-blue-500 mt-[-4px]" />
+            <AlertDescription className="text-xs sm:text-sm text-blue-600 dark:text-blue-400">
               This QR code will expire in 24 hours for security purposes
             </AlertDescription>
           </Alert>

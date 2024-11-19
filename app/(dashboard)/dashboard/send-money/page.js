@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Html5Qrcode } from "html5-qrcode";
 import {
   QrCode,
@@ -13,6 +13,8 @@ import {
   Check,
   AlertCircle,
   ArrowLeftRight,
+  X,
+  Camera,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -89,6 +91,20 @@ const variants = {
     hidden: { opacity: 0, x: -20 },
     visible: { opacity: 1, x: 0 },
   },
+};
+
+
+const MotionDialogContent = motion(DialogContent);
+
+const qrCodevariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.95 },
+};
+
+const dataVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
 };
 
 // Helper Functions
@@ -175,8 +191,10 @@ function QRScanner({ onResult, onError }) {
 function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
   const [error, setError] = useState("");
   const [scannedData, setScannedData] = useState(null);
+  const [isScanning, setIsScanning] = useState(true);
 
   const handleScanResult = (result) => {
+    setIsScanning(false);
     setScannedData(result);
     onScanSuccess(result);
   };
@@ -186,75 +204,177 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
     toast.error(errorMessage);
   };
 
+  const handleRetry = () => {
+    setScannedData(null);
+    setError("");
+    setIsScanning(true);
+  };
+
+  const handleClose = () => {
+    setScannedData(null);
+    setError("");
+    setIsScanning(true);
+    onClose(false);
+  };
+
   return (
     <>
       <Button
         variant="outline"
         size="sm"
-        className="flex items-center gap-2"
-        onClick={() => onClose(true)} // This opens the dialog
+        className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        onClick={() => onClose(true)}
       >
-        <QrCode className="h-4 w-4" />
-        Scan QR
+        <Camera className="h-4 w-4" />
+        <span className="hidden sm:inline">Scan QR</span>
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Scan QR Code</DialogTitle>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <MotionDialogContent
+          className="sm:max-w-md overflow-hidden"
+          variants={qrCodevariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          <DialogHeader className="space-y-1">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-2">
+                <QrCode className="h-5 w-5" />
+                QR Code Scanner
+              </DialogTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={handleClose}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
             <DialogDescription>
-              Point your camera at a payment QR code or account QR code
+              Scan a QR code to automatically fill payment or account details
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-4">
-            {!scannedData && !error && (
-              <QRScanner
-                onResult={handleScanResult}
-                onError={handleScanError}
-              />
+          <div className="mt-4 space-y-4">
+            {error && (
+              <Alert variant="destructive" className="text-sm">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
             )}
 
-            {scannedData && (
-              <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <h3 className="font-medium">Scanned Details:</h3>
-                {scannedData.accountNumber && (
-                  <div className="space-y-2">
-                    <p>Account Number: {scannedData.accountNumber}</p>
-                    <p>Bank: {scannedData.bankName}</p>
+            <AnimatePresence mode="wait">
+              {!scannedData && !error && isScanning && (
+                <motion.div
+                  key="scanner"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="relative"
+                >
+                  <div className="aspect-square max-h-[300px] w-full">
+                    <QRScanner
+                      onResult={handleScanResult}
+                      onError={handleScanError}
+                    />
                   </div>
-                )}
-                {scannedData.amount && (
-                  <div className="space-y-2">
-                    <p>
-                      Amount:{" "}
-                      {formatAmount(scannedData.amount, scannedData.currency)}
-                    </p>
-                    <p>Currency: {scannedData.currency}</p>
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <motion.div
+                      className="w-48 h-48 border-2 border-white rounded-lg"
+                      initial={{ borderColor: "rgba(255,255,255,0.3)" }}
+                      animate={{ borderColor: "rgba(255,255,255,0.8)" }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    />
                   </div>
-                )}
-              </div>
-            )}
-          </div>
+                </motion.div>
+              )}
 
-          <div className="flex justify-end gap-2 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setScannedData(null);
-                setError("");
-                onClose(false);
-              }}
-            >
-              {scannedData ? "Continue" : "Cancel"}
-            </Button>
+              {scannedData && (
+                <motion.div
+                  key="result"
+                  variants={dataVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="rounded-lg border bg-card p-6 space-y-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-lg">Scanned Details</h3>
+                    <Badge variant="secondary" className="text-xs">
+                      Verified
+                    </Badge>
+                  </div>
+
+                  {scannedData.accountNumber && (
+                    <motion.div
+                      variants={dataVariants}
+                      className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800"
+                    >
+                      <div className="grid grid-cols-2 gap-2 py-2">
+                        <span className="text-sm text-gray-500">Account</span>
+                        <span className="text-sm font-mono text-right">
+                          {scannedData.accountNumber}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 py-2">
+                        <span className="text-sm text-gray-500">Bank</span>
+                        <span className="text-sm text-right">
+                          {scannedData.bankName}
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {scannedData.amount && (
+                    <motion.div
+                      variants={dataVariants}
+                      className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800"
+                    >
+                      <div className="grid grid-cols-2 gap-2 py-2">
+                        <span className="text-sm text-gray-500">Amount</span>
+                        <span className="text-sm font-mono text-right">
+                          {formatAmount(
+                            scannedData.amount,
+                            scannedData.currency
+                          )}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 py-2">
+                        <span className="text-sm text-gray-500">Currency</span>
+                        <span className="text-sm text-right">
+                          {scannedData.currency}
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex justify-end gap-2 pt-4">
+              {scannedData ? (
+                <>
+                  <Button variant="outline" onClick={handleRetry}>
+                    Scan Again
+                  </Button>
+                  <Button onClick={handleClose}>
+                    Continue
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                <Button variant="outline" onClick={handleClose}>
+                  Cancel
+                </Button>
+              )}
+            </div>
           </div>
-        </DialogContent>
+        </MotionDialogContent>
       </Dialog>
     </>
   );
 }
-
 export default function SendMoneyPage() {
   // State
   const [fromCurrency, setFromCurrency] = useState("USD");
@@ -504,8 +624,8 @@ export default function SendMoneyPage() {
 
               {/* Info Alert */}
               <Alert className="bg-blue-50 dark:bg-blue-900/20">
-                <Info className="h-4 w-4 text-blue-500" />
-                <AlertDescription className="text-blue-600 dark:text-blue-400">
+                <Info className="h-4 w-4 text-blue-500 mt-[-7px] sm:mt-[-4px]" />
+                <AlertDescription className="text-xs sm:text-sm text-blue-600 dark:text-blue-400">
                   Instant transfers to all Nigerian banks
                 </AlertDescription>
               </Alert>
@@ -759,7 +879,7 @@ export default function SendMoneyPage() {
             <p className="font-medium text-gray-900 dark:text-white">
               Secure Transfers
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               All transfers are protected with bank-grade encryption and require
               2FA verification for your security.
             </p>
