@@ -18,6 +18,7 @@ import {
   ScanQrCode,
   ScanQrCodeIcon,
   User,
+  CheckCircle2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -182,15 +183,18 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
   const [error, setError] = useState("");
   const [scannedData, setScannedData] = useState(null);
   const [isScanning, setIsScanning] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
 
   const handleScanResult = (result) => {
     setIsScanning(false);
     setScannedData(result);
+    setIsVerified(true);
     onScanSuccess(result);
   };
 
   const handleScanError = (errorMessage) => {
     setError(errorMessage);
+    setIsVerified(false);
     toast.error(errorMessage);
   };
 
@@ -198,12 +202,14 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
     setScannedData(null);
     setError("");
     setIsScanning(true);
+    setIsVerified(false);
   };
 
   const handleClose = () => {
     setScannedData(null);
     setError("");
     setIsScanning(true);
+    setIsVerified(false);
     onClose(false);
   };
 
@@ -227,14 +233,6 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
                 <QrCode className="h-5 w-5" />
                 QR Code Scanner
               </DialogTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={handleClose}
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </div>
             <DialogDescription>
               Scan a QR code to automatically fill payment or account details
@@ -267,9 +265,12 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
               <div className="rounded-lg border bg-card p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium text-lg">Scanned Details</h3>
-                  <Badge variant="secondary" className="text-xs">
-                    Verified
-                  </Badge>
+                  {isVerified && (
+                    <Badge className="bg-green-500 text-white border-green-500 flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      <span className="text-xs">Verified</span>
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800">
