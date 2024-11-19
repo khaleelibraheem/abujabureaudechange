@@ -14,7 +14,9 @@ import {
   AlertCircle,
   ArrowLeftRight,
   X,
-  Camera,
+  QrCodeIcon,
+  ScanQrCode,
+  ScanQrCodeIcon,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -93,19 +95,6 @@ const variants = {
   },
 };
 
-
-const MotionDialogContent = motion(DialogContent);
-
-const qrCodevariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.95 },
-};
-
-const dataVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
 
 // Helper Functions
 const formatAmount = (value, currency) => {
@@ -222,21 +211,15 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
       <Button
         variant="outline"
         size="sm"
-        className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-800"
         onClick={() => onClose(true)}
       >
-        <Camera className="h-4 w-4" />
+        <ScanQrCodeIcon className="h-4 w-4" />
         <span className="hidden sm:inline">Scan QR</span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <MotionDialogContent
-          className="sm:max-w-md overflow-hidden"
-          variants={qrCodevariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
+        <DialogContent className="sm:max-w-md overflow-hidden">
           <DialogHeader className="space-y-1">
             <div className="flex items-center justify-between">
               <DialogTitle className="flex items-center gap-2">
@@ -265,92 +248,64 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
               </Alert>
             )}
 
-            <AnimatePresence mode="wait">
-              {!scannedData && !error && isScanning && (
-                <motion.div
-                  key="scanner"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="relative"
-                >
-                  <div className="aspect-square max-h-[300px] w-full">
-                    <QRScanner
-                      onResult={handleScanResult}
-                      onError={handleScanError}
-                    />
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <motion.div
-                      className="w-48 h-48 border-2 border-white rounded-lg"
-                      initial={{ borderColor: "rgba(255,255,255,0.3)" }}
-                      animate={{ borderColor: "rgba(255,255,255,0.8)" }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                    />
-                  </div>
-                </motion.div>
-              )}
+            {!scannedData && !error && isScanning && (
+              <div className="relative">
+                <div className="aspect-square max-h-[300px] w-full">
+                  <QRScanner
+                    onResult={handleScanResult}
+                    onError={handleScanError}
+                  />
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-48 h-48 border-2 border-white/80 rounded-lg" />
+                </div>
+              </div>
+            )}
 
-              {scannedData && (
-                <motion.div
-                  key="result"
-                  variants={dataVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="rounded-lg border bg-card p-6 space-y-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-lg">Scanned Details</h3>
-                    <Badge variant="secondary" className="text-xs">
-                      Verified
-                    </Badge>
+            {scannedData && (
+              <div className="rounded-lg border bg-card p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium text-lg">Scanned Details</h3>
+                  <Badge variant="secondary" className="text-xs">
+                    Verified
+                  </Badge>
+                </div>
+
+                {scannedData.accountNumber && (
+                  <div className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800">
+                    <div className="grid grid-cols-2 gap-2 py-2">
+                      <span className="text-sm text-gray-500">Account</span>
+                      <span className="text-sm font-mono text-right">
+                        {scannedData.accountNumber}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 py-2">
+                      <span className="text-sm text-gray-500">Bank</span>
+                      <span className="text-sm text-right">
+                        {scannedData.bankName}
+                      </span>
+                    </div>
                   </div>
+                )}
 
-                  {scannedData.accountNumber && (
-                    <motion.div
-                      variants={dataVariants}
-                      className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800"
-                    >
-                      <div className="grid grid-cols-2 gap-2 py-2">
-                        <span className="text-sm text-gray-500">Account</span>
-                        <span className="text-sm font-mono text-right">
-                          {scannedData.accountNumber}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 py-2">
-                        <span className="text-sm text-gray-500">Bank</span>
-                        <span className="text-sm text-right">
-                          {scannedData.bankName}
-                        </span>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {scannedData.amount && (
-                    <motion.div
-                      variants={dataVariants}
-                      className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800"
-                    >
-                      <div className="grid grid-cols-2 gap-2 py-2">
-                        <span className="text-sm text-gray-500">Amount</span>
-                        <span className="text-sm font-mono text-right">
-                          {formatAmount(
-                            scannedData.amount,
-                            scannedData.currency
-                          )}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 py-2">
-                        <span className="text-sm text-gray-500">Currency</span>
-                        <span className="text-sm text-right">
-                          {scannedData.currency}
-                        </span>
-                      </div>
-                    </motion.div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                {scannedData.amount && (
+                  <div className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800">
+                    <div className="grid grid-cols-2 gap-2 py-2">
+                      <span className="text-sm text-gray-500">Amount</span>
+                      <span className="text-sm font-mono text-right">
+                        {formatAmount(scannedData.amount, scannedData.currency)}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 py-2">
+                      <span className="text-sm text-gray-500">Currency</span>
+                      <span className="text-sm text-right">
+                        {scannedData.currency}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex justify-end gap-2 pt-4">
               {scannedData ? (
@@ -370,7 +325,7 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
               )}
             </div>
           </div>
-        </MotionDialogContent>
+        </DialogContent>
       </Dialog>
     </>
   );
