@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Building2,
   CreditCard,
+  User,
 } from "lucide-react";
 import {
   Select,
@@ -59,6 +60,7 @@ export default function ReceiveMoneyPage() {
   const [qrValue, setQrValue] = useState("");
   const [displayAmount, setDisplayAmount] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [recipientName, setRecipientName] = useState("");
 
   const handleAmountChange = (e) => {
     const value = e.target.value;
@@ -85,7 +87,13 @@ export default function ReceiveMoneyPage() {
   };
 
   useEffect(() => {
-    if (selectedCurrency && amount && bankName && accountNumber) {
+    if (
+      selectedCurrency &&
+      amount &&
+      bankName &&
+      accountNumber &&
+      recipientName
+    ) {
       setIsGenerating(true);
       const timer = setTimeout(() => {
         setQrValue(
@@ -94,6 +102,7 @@ export default function ReceiveMoneyPage() {
             amount: parseFloat(amount),
             bankName: bankName,
             accountNumber: accountNumber,
+            recipientName: recipientName,
             timestamp: new Date().toISOString(),
           })
         );
@@ -103,7 +112,7 @@ export default function ReceiveMoneyPage() {
     } else {
       setQrValue("");
     }
-  }, [selectedCurrency, amount, bankName, accountNumber]);
+  }, [selectedCurrency, amount, bankName, accountNumber, recipientName]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(qrValue);
@@ -186,6 +195,19 @@ export default function ReceiveMoneyPage() {
         <CardContent className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
+              <label className="text-sm font-medium">Recipient Name</label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Enter recipient name"
+                  value={recipientName}
+                  onChange={(e) => setRecipientName(e.target.value)}
+                  className="pl-8"
+                />
+                <User className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              </div>
+            </div>
+            <div className="space-y-2">
               <label className="text-sm font-medium">Amount</label>
               <div className="relative">
                 <Input
@@ -249,7 +271,6 @@ export default function ReceiveMoneyPage() {
                   onChange={handleAccountNumberChange}
                   className="pl-8"
                   maxLength={11}
-                  
                 />
                 <CreditCard className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
               </div>

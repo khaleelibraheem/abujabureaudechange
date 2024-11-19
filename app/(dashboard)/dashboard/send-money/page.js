@@ -17,6 +17,7 @@ import {
   QrCodeIcon,
   ScanQrCode,
   ScanQrCodeIcon,
+  User,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -214,7 +215,7 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
         className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-800"
         onClick={() => onClose(true)}
       >
-        <ScanQrCodeIcon className="h-4 w-4" />
+        <ScanQrCode className="h-4 w-4" />
         <span className="hidden sm:inline">Scan QR</span>
       </Button>
 
@@ -226,6 +227,14 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
                 <QrCode className="h-5 w-5" />
                 QR Code Scanner
               </DialogTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={handleClose}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
             <DialogDescription>
               Scan a QR code to automatically fill payment or account details
@@ -263,39 +272,53 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
                   </Badge>
                 </div>
 
-                {scannedData.accountNumber && (
-                  <div className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800">
+                <div className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800">
+                  {scannedData.recipientName && (
                     <div className="grid grid-cols-2 gap-2 py-2">
-                      <span className="text-sm text-gray-500">Account</span>
-                      <span className="text-sm font-mono text-right">
-                        {scannedData.accountNumber}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 py-2">
-                      <span className="text-sm text-gray-500">Bank</span>
+                      <span className="text-sm text-gray-500">Recipient</span>
                       <span className="text-sm text-right">
-                        {scannedData.bankName}
+                        {scannedData.recipientName}
                       </span>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {scannedData.amount && (
-                  <div className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800">
-                    <div className="grid grid-cols-2 gap-2 py-2">
-                      <span className="text-sm text-gray-500">Amount</span>
-                      <span className="text-sm font-mono text-right">
-                        {formatAmount(scannedData.amount, scannedData.currency)}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 py-2">
-                      <span className="text-sm text-gray-500">Currency</span>
-                      <span className="text-sm text-right">
-                        {scannedData.currency}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                  {scannedData.accountNumber && (
+                    <>
+                      <div className="grid grid-cols-2 gap-2 py-2">
+                        <span className="text-sm text-gray-500">Account</span>
+                        <span className="text-sm font-mono text-right">
+                          {scannedData.accountNumber}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 py-2">
+                        <span className="text-sm text-gray-500">Bank</span>
+                        <span className="text-sm text-right">
+                          {scannedData.bankName}
+                        </span>
+                      </div>
+                    </>
+                  )}
+
+                  {scannedData.amount && (
+                    <>
+                      <div className="grid grid-cols-2 gap-2 py-2">
+                        <span className="text-sm text-gray-500">Amount</span>
+                        <span className="text-sm font-mono text-right">
+                          {formatAmount(
+                            scannedData.amount,
+                            scannedData.currency
+                          )}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 py-2">
+                        <span className="text-sm text-gray-500">Currency</span>
+                        <span className="text-sm text-right">
+                          {scannedData.currency}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             )}
 
@@ -322,6 +345,7 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
     </>
   );
 }
+
 export default function SendMoneyPage() {
   // State
   const [fromCurrency, setFromCurrency] = useState("USD");

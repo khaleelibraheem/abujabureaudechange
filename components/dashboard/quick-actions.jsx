@@ -115,7 +115,7 @@ export function QuickActions() {
 
       {/* Actions Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 sm:px-0">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="sync">
           {actions.map((action, index) => (
             <motion.div
               key={action.title}
