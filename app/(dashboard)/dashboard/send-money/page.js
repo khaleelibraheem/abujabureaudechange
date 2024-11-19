@@ -226,14 +226,6 @@ function QRScannerDialog({ isOpen, onClose, onScanSuccess }) {
                 <QrCode className="h-5 w-5" />
                 QR Code Scanner
               </DialogTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={handleClose}
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </div>
             <DialogDescription>
               Scan a QR code to automatically fill payment or account details
