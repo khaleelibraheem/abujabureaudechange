@@ -5,26 +5,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
 import {
-  Menu,
   ArrowRight,
   Home,
   Info,
   LayoutGrid,
   HelpCircle,
   ChevronRight,
-  Moon,
 } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import Logo from "../shared/logo";
+import { ThemeToggle } from "../theme-toggle";
+import MenuIcon from "../menu-icon";
+
+// Modern Menu Icon Component
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
@@ -32,6 +33,52 @@ const navigation = [
   { name: "Services", href: "/services", icon: LayoutGrid },
   { name: "FAQ", href: "/faq", icon: HelpCircle },
 ];
+
+const MobileNavItem = ({ item, isActive, onClick }) => (
+  <Link
+    href={item.href}
+    onClick={onClick}
+    className={`flex items-center w-full p-3 rounded-xl transition-all duration-300 ${
+      isActive
+        ? "bg-indigo-50 dark:bg-indigo-950"
+        : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+    }`}
+  >
+    <div className="flex items-center gap-3 flex-1">
+      <div
+        className={`flex items-center justify-center w-10 h-10 rounded-lg ${
+          isActive
+            ? "bg-indigo-100 dark:bg-indigo-900"
+            : "bg-gray-100 dark:bg-gray-800"
+        }`}
+      >
+        <item.icon
+          className={`h-5 w-5 ${
+            isActive
+              ? "text-indigo-600 dark:text-indigo-400"
+              : "text-gray-500 dark:text-gray-400"
+          }`}
+        />
+      </div>
+      <span
+        className={`text-sm font-medium ${
+          isActive
+            ? "text-indigo-600 dark:text-indigo-400"
+            : "text-gray-700 dark:text-gray-300"
+        }`}
+      >
+        {item.name}
+      </span>
+    </div>
+    <ChevronRight
+      className={`h-4 w-4 ${
+        isActive
+          ? "text-indigo-600 dark:text-indigo-400"
+          : "text-gray-400 dark:text-gray-600"
+      }`}
+    />
+  </Link>
+);
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,177 +122,165 @@ const Navbar = () => {
       }`}
     >
       <nav className="mx-auto px-4 h-16">
-        <div className="flex items-center justify-between h-full">
+        <div className="flex items-center justify-between h-full max-w-7xl mx-auto">
           {/* Logo */}
-          <Link href="/">
+          <Link href="/" className="flex-shrink-0">
             <Logo />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-6">
-            <div className="flex gap-4">
+          <div className="hidden lg:flex items-center gap-8">
+            {/* Navigation Items */}
+            <div className="flex items-center gap-1">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`relative px-2 py-1 text-[14px] font-medium transition-colors group ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     pathname === item.href
-                      ? "text-indigo-600 dark:text-indigo-400"
-                      : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                      ? "bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
-                  {item.name}
-                  <span
-                    className={`absolute inset-x-0 -bottom-0.5 h-0.5 rounded-full transition-transform origin-left scale-x-0 group-hover:scale-x-100 ${
+                  <item.icon
+                    className={`h-4 w-4 ${
                       pathname === item.href
-                        ? "bg-gradient-to-r from-indigo-600 to-blue-600 scale-x-100"
-                        : "bg-gradient-to-r from-indigo-600 to-blue-600"
+                        ? "text-indigo-600 dark:text-indigo-400"
+                        : "text-gray-500 dark:text-gray-400"
                     }`}
                   />
+                  {item.name}
                 </Link>
               ))}
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Desktop Actions */}
+            <div className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-700">
               <ThemeToggle />
               <SignedOut>
-                <Link href="/sign-in">
-                  <Button variant="ghost" size="sm" className="font-medium">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/sign-up">
-                  <Button
-                    size="sm"
-                    className="font-medium bg-gradient-to-r from-indigo-600 to-blue-600 hover:opacity-90 transition-opacity"
-                  >
-                    Get Started
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link href="/sign-in">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-medium h-9"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/sign-up">
+                    <Button
+                      size="sm"
+                      className="font-medium h-9 bg-gradient-to-r from-indigo-600 to-blue-600 hover:opacity-90 transition-opacity"
+                    >
+                      Get Started
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
               </SignedOut>
               <SignedIn>
-                <Link href="/dashboard">
-                  <Button
-                    size="sm"
-                    className="font-medium bg-gradient-to-r from-indigo-600 to-blue-600 hover:opacity-90 transition-opacity"
-                  >
-                    Dashboard
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </Link>
+                <div className="flex items-center gap-3">
+                  <Link href="/dashboard">
+                    <Button
+                      size="sm"
+                      className="font-medium h-9 bg-gradient-to-r from-indigo-600 to-blue-600 hover:opacity-90 transition-opacity"
+                    >
+                      Dashboard
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </Link>
+                  <UserButton />
+                </div>
               </SignedIn>
             </div>
           </div>
 
           {/* Mobile Menu */}
-          <div className="lg:hidden flex gap-2 items-center">
-            <ThemeToggle />
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-10 w-10 bg-white dark:bg-white/10 border-gray-200 dark:border-gray-800 backdrop-blur-sm"
+          <div className="lg:hidden flex gap-3 items-center">
+            <Drawer open={isOpen} onOpenChange={setIsOpen}>
+              <DrawerTrigger asChild>
+                <button
+                  className="relative h-10 w-10 flex items-center justify-center focus:outline-none"
+                  aria-label="Menu"
                 >
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="right"
-                className="w-80 p-0 flex flex-col bg-white dark:bg-[#0B0F1C] border-l border-gray-200 dark:border-gray-800"
-              >
-                <SheetHeader className="flex items-start px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-                  <SheetTitle>
-                    <Link href="/">
-                      <Logo />
-                    </Link>
-                  </SheetTitle>
-                  <SheetDescription className="text-sm text-gray-500 dark:text-gray-400">
-                    Your trusted exchange partner
-                  </SheetDescription>
-                </SheetHeader>
+                  <MenuIcon isOpen={isOpen} />
+                </button>
+              </DrawerTrigger>
+              <DrawerContent>
+                <div className="w-full">
+                  <DrawerHeader className="px-4 py-4 border-b border-gray-100 dark:border-gray-800">
+                    <DrawerTitle className="flex items-center justify-between">
+                      <Link href="/" onClick={() => setIsOpen(false)}>
+                        <Logo />
+                      </Link>
+                      <ThemeToggle />
+                    </DrawerTitle>
+                  </DrawerHeader>
 
-                {/* Navigation Links */}
-                <div className="flex-1 overflow-y-auto py-2">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-3 px-6 py-3 transition-colors ${
-                        pathname === item.href
-                          ? "bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      }`}
-                    >
-                      <item.icon
-                        className={`h-5 w-5 ${
-                          pathname === item.href
-                            ? "text-indigo-600 dark:text-indigo-400"
-                            : "text-gray-500 dark:text-gray-400"
-                        }`}
-                      />
-                      <span className="flex-1 font-medium">{item.name}</span>
-                      <ChevronRight
-                        className={`h-4 w-4 ${
-                          pathname === item.href
-                            ? "text-indigo-600 dark:text-indigo-400"
-                            : "text-gray-400"
-                        }`}
-                      />
-                    </Link>
-                  ))}
-                </div>
+                  {/* Primary Navigation */}
+                  <div className="p-4">
+                    <div className="space-y-1">
+                      {navigation.map((item) => (
+                        <MobileNavItem
+                          key={item.href}
+                          item={item}
+                          isActive={pathname === item.href}
+                          onClick={() => setIsOpen(false)}
+                        />
+                      ))}
+                    </div>
+                  </div>
 
-                {/* User Profile Section */}
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
-                  <SignedIn>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <Link href="/dashboard">
+                  {/* Quick Actions */}
+                  <div className="px-4 pb-4 pt-2">
+                    <SignedOut>
+                      <div className="space-y-2">
+                        <Link href="/sign-up" className="w-full">
                           <Button
-                            className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:opacity-90"
+                            className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:opacity-90 h-11 text-base"
                             onClick={() => setIsOpen(false)}
                           >
-                            Dashboard
-                            <ArrowRight className="w-4 h-4 ml-1" />
+                            Get Started
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        </Link>
+                        <Link href="/sign-in" className="w-full">
+                          <Button
+                            variant="outline"
+                            className="w-full mt-3 h-11 text-base font-normal"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            Sign In
                           </Button>
                         </Link>
                       </div>
-                    </div>
-                  </SignedIn>
-                  <SignedOut>
-                    <div className="flex gap-2">
-                      <Link href="/sign-in" className="flex-1">
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          Sign In
-                        </Button>
-                      </Link>
-                      <Link href="/sign-up" className="flex-1">
-                        <Button
-                          className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:opacity-90"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          Get Started
-                        </Button>
-                      </Link>
-                    </div>
-                  </SignedOut>
-                </div>
+                    </SignedOut>
+                    <SignedIn>
+                      <div className="flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+                        <Link href="/dashboard" className="flex-1">
+                          <Button
+                            className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:opacity-90 h-11 text-base"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            Dashboard
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        </Link>
+                        {/* <UserButton /> */}
+                      </div>
+                    </SignedIn>
+                  </div>
 
-                {/* Footer Info */}
-                <div className="px-6 py-4 border-gray-200 dark:border-gray-800">
-                  <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-                    © 2024 Abuja Bureau De Change.
-                  </p>
+                  {/* Footer */}
+                  <DrawerFooter className="pt-2 pb-6 px-4 border-t border-gray-100 dark:border-gray-800">
+                    <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                      © 2024 Abuja Bureau De Change.
+                    </p>
+                  </DrawerFooter>
                 </div>
-              </SheetContent>
-            </Sheet>
+              </DrawerContent>
+            </Drawer>
           </div>
         </div>
       </nav>

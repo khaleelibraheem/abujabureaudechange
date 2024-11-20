@@ -24,11 +24,6 @@ export const sidebarItems = [
     href: "/dashboard/exchange-rates",
     icon: RefreshCcw,
   },
-  // {
-  //   title: "Crypto",
-  //   href: "/dashboard/crypto",
-  //   icon: Coins,
-  // },
   {
     title: "Virtual Cards",
     href: "/dashboard/cards",

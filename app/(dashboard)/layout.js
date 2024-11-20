@@ -1,7 +1,7 @@
 "use client";
 
-import { DashboardNavbar } from "@/components/dashboard/navbar";
-import DashboardSidebar from "@/components/dashboard/sidebar";
+import { DashboardNavbar } from "@/components/dashboard/dashboard-navbar";
+import DashboardSidebar from "@/components/dashboard/dashboard-sidebar";
 import { useUser } from "@clerk/nextjs";
 
 export default function DashboardLayout({ children }) {
