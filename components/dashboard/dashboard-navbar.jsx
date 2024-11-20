@@ -177,8 +177,7 @@ export function DashboardNavbar({ user }) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {mounted && <ThemeToggle />}
+        <div className="hidden lg:block">{mounted && <ThemeToggle />}</div>
 
         {/* User Profile - Hidden on mobile */}
         <div className="hidden md:flex items-center gap-2">

@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -7,9 +8,16 @@ const isPublicRoute = createRouteMatcher([
   "/about",
   "/services",
   "/faq",
+  "/manifest.json", // Add manifest.json to public routes
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
+  // Handle manifest.json specifically
+  if (request.nextUrl.pathname === "/manifest.json") {
+    return NextResponse.rewrite(new URL("/manifest.json", request.url));
+  }
+
+  // Handle other routes with authentication
   if (!isPublicRoute(request)) {
     await auth.protect();
   }
@@ -17,9 +25,9 @@ export default clerkMiddleware(async (auth, request) => {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip)).*)",
+    "/manifest.json",
+    "/manifest.webmanifest",
     "/(api|trpc)(.*)",
   ],
 };

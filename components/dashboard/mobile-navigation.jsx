@@ -130,6 +130,8 @@ export function MobileNavigation({ user }) {
         </DrawerTrigger>
         <DrawerContent className="h-[70vh]">
           <div className="w-full flex flex-col h-full">
+            <div className="mx-auto h-[14px] w-[100px] rounded-full bg-muted" />
+
             <DrawerHeader className="px-4 py-4 border-b border-gray-100 dark:border-gray-800">
               <DrawerTitle className="flex items-center justify-between">
                 <Link href="/" onClick={() => setIsOpen(false)}>
@@ -162,7 +164,7 @@ export function MobileNavigation({ user }) {
             </div>
 
             {/* Footer */}
-            <DrawerFooter className="px-4 py-4 mt-auto border-t border-gray-200 dark:border-gray-800">
+            <DrawerFooter className="px-4 py-4 pb-10 mt-auto border-t border-gray-200 dark:border-gray-800">
               <p className="text-xs text-center text-gray-500 dark:text-gray-400">
                 © {new Date().getFullYear()} Abuja Bureau De Change
               </p>

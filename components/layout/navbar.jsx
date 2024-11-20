@@ -70,13 +70,6 @@ const MobileNavItem = ({ item, isActive, onClick }) => (
         {item.name}
       </span>
     </div>
-    <ChevronRight
-      className={`h-4 w-4 ${
-        isActive
-          ? "text-indigo-600 dark:text-indigo-400"
-          : "text-gray-400 dark:text-gray-600"
-      }`}
-    />
   </Link>
 );
 
@@ -219,7 +212,7 @@ const Navbar = () => {
                   </DrawerHeader>
 
                   {/* Primary Navigation */}
-                  <div className="p-4">
+                  <div className="p-2">
                     <div className="space-y-1">
                       {navigation.map((item) => (
                         <MobileNavItem
